@@ -27,12 +27,145 @@ El archivo `G9ED.efx.xml` (extraído de G9ED.exe) contiene la definición comple
 
 ## Effect IDs (Comando 0x31)
 
-Mapeo descubierto mediante captura MIDI:
+Mapeo completo descubierto mediante captura MIDI (2026-01-25):
 
-| Effect ID | Módulo | Parámetros |
-|-----------|--------|------------|
-| 0x05 | AMP | 02=Gain, 03=Tone, 04=Level |
-| ... | ... | (por descubrir) |
+| Effect ID | Módulo | Estado |
+|-----------|--------|--------|
+| 0x00 | TOP/Global | ✅ Confirmado |
+| 0x01 | CMP | ✅ Confirmado |
+| 0x02 | WAH | ✅ Confirmado |
+| 0x03 | EXT | ✅ Confirmado |
+| 0x04 | ZNR | ✅ Confirmado |
+| 0x05 | AMP | ✅ Confirmado |
+| 0x06 | EQ | ✅ Confirmado |
+| 0x07 | CAB | ✅ Confirmado |
+| 0x08 | MOD | ✅ Confirmado |
+| 0x09 | DLY | ✅ Confirmado |
+| 0x0A | REV | ✅ Confirmado |
+| 0x0B | SYNC | Especial (heartbeat) |
+
+**Nota:** El Effect ID coincide con el índice de fila en BIT_TBL del decoder.
+
+## Parameter IDs por Módulo (Comando 0x31)
+
+Mapeo completo de parámetros capturados mediante MIDI (2026-01-25):
+
+### 0x00 - TOP (Global)
+
+| Param ID | Nombre | Rango Capturado |
+|----------|--------|-----------------|
+| 0x05 | Level | 4-49 |
+
+### 0x01 - CMP (Compressor)
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | On/Off | 0 | 0=Off, 1=On |
+| 0x02 | Threshold/Sense | 7-10 | Depende del tipo |
+| 0x03 | Ratio/Attack | 0-1 | Depende del tipo |
+| 0x04 | Attack | 6-10 | |
+| 0x05 | Level | 40-41 | |
+
+### 0x02 - WAH
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | On/Off | 0 | 0=Off, 1=On |
+| 0x02 | Color/Sense | 0-21 | Depende del tipo |
+| 0x03 | DryLevel/Resonance | 6-40 | Depende del tipo |
+| 0x04 | Color/Level | 9-26 | Depende del tipo |
+| 0x05 | Balance/Level | 40-41 | |
+
+### 0x03 - EXT (External Loop)
+
+| Param ID | Nombre | Rango Capturado |
+|----------|--------|-----------------|
+| 0x02 | Send | 82-83 |
+| 0x03 | Return | 81 |
+| 0x04 | Dry | 1 |
+
+### 0x04 - ZNR (Noise Reduction)
+
+| Param ID | Nombre | Rango Capturado |
+|----------|--------|-----------------|
+| 0x02 | Threshold | 10-11 |
+
+### 0x05 - AMP
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | On/Off | 0 | 0=Off, 1=On |
+| 0x02 | Gain | 71 | |
+| 0x03 | Body/Tone | 11 | Depende del tipo |
+| 0x04 | Level | 90 | |
+
+### 0x06 - EQ (Equalizer)
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x02 | Band 1 (Low) | 12 | |
+| 0x03 | Band 2 | 18-19 | |
+| 0x04 | Band 3 (Mid) | 11-12 | |
+| 0x05 | Band 4 | 16-17 | |
+| 0x06 | Band 5 | 0-4 | |
+| 0x07 | Band 6 (High) | 14-16 | |
+
+### 0x07 - CAB (Cabinet)
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | On/Off | 0 | 0=Off, 1=On |
+| 0x02 | Depth | 1 | Small/Middle |
+| 0x03 | Mic Type | 0-2 | Dynamic/Condenser |
+| 0x04 | Mic Position | 2 | |
+
+### 0x08 - MOD (Modulation)
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | On/Off | 0 | 0=Off, 1=On |
+| 0x02 | Color/Rate | 7 | Depende del tipo |
+| 0x03 | Attack/Depth | 8 | Depende del tipo |
+| 0x04 | X-Fade/Tone | 1-15 | Depende del tipo |
+| 0x05 | Mix | 1 | |
+
+### 0x09 - DLY (Delay)
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | On/Off | 0 | 0=Off, 1=On |
+| 0x02 | Time/Size | 103-104 | Depende del tipo |
+| 0x03 | FeedBack/Reflex | 11-12 | Depende del tipo |
+| 0x04 | HiDamp | 9 | |
+| 0x05 | Mix | 21 | |
+
+### 0x0A - REV (Reverb)
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | On/Off | 0 | 0=Off, 1=On |
+| 0x02 | Decay/Width | 15 | Depende del tipo |
+| 0x03 | PreDelay | 90 | |
+| 0x04 | Tone/Width | 9 | Depende del tipo |
+| 0x05 | Mix | 31 | |
+
+### 0x0B - SYNC (Sistema)
+
+| Param ID | Nombre | Rango Capturado | Notas |
+|----------|--------|-----------------|-------|
+| 0x00 | Status | 77-80 | Heartbeat/sync |
+| 0x01 | Type | 2 | |
+| 0x02 | Param | 12 | |
+
+## Estructura General de Parámetros
+
+```
+Param 0x00 = On/Off (cuando aplica)
+Param 0x01 = Type (selector de tipo de efecto)
+Param 0x02+ = Parámetros específicos del efecto
+```
+
+**Nota:** Los nombres de parámetros varían según el tipo de efecto seleccionado dentro de cada módulo.
 
 ## Catálogo de Efectos
 
@@ -182,16 +315,21 @@ Mapeo descubierto mediante captura MIDI:
 
 ## Archivos de Referencia
 
-- [G9ED.efx.xml](G9ED.efx.xml) - Definición XML completa
+- [PARAMETER_MAP.md](PARAMETER_MAP.md) - **Mapeo completo contrastado con XML**
+- [G9ED.efx.xml](G9ED.efx.xml) - Definición XML completa de efectos
+- [effect_ids_capture.log](effect_ids_capture.log) - Captura MIDI de Effect IDs
+- [param_capture.log](param_capture.log) - Captura MIDI de Parameter IDs
 - [modules/amp.md](modules/amp.md) - Detalles de amplificadores
 - [modules/mod.md](modules/mod.md) - Detalles de modulación
 
 ## Trabajo Pendiente
 
-- [ ] Completar mapeo de Effect IDs MIDI
-- [ ] Documentar rangos de valores para cada parámetro
-- [ ] Verificar correspondencia con bytes del patch
-- [ ] Identificar parámetros del EQ y CAB
+- [x] Completar mapeo de Effect IDs MIDI (2026-01-25)
+- [x] Mapear Parameter IDs completos para cada módulo (2026-01-25)
+- [x] Identificar parámetros del EQ y CAB (2026-01-25)
+- [x] Documentar rangos completos de valores - ver [PARAMETER_MAP.md](PARAMETER_MAP.md)
+- [x] Contrastar capturas MIDI con XML (2026-01-25)
+- [ ] Verificar correspondencia con bytes del patch (siguiente fase)
 
 ## Siguiente Paso
 
