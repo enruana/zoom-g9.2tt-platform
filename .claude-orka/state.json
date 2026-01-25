@@ -1,0 +1,33 @@
+{
+  "version": "0.9.2",
+  "projectPath": "/Users/andres.mantilla/Desktop/Me/software-engineering/zoom-g9.2tt-platform",
+  "sessions": [
+    {
+      "id": "efea708a-bba0-43c3-8c9b-f2549b4f06a8",
+      "name": "reverse-engineering-midi",
+      "tmuxSessionId": "orka-efea708a-bba0-43c3-8c9b-f2549b4f06a8",
+      "status": "active",
+      "createdAt": "2026-01-23T16:55:18.806Z",
+      "lastActivity": "2026-01-23T22:28:06.153Z",
+      "main": {
+        "claudeSessionId": "64c87491-5da7-4b50-aad4-67890e0e10a4",
+        "tmuxPaneId": "%2",
+        "status": "active"
+      },
+      "forks": [
+        {
+          "id": "8f0438f3-ef63-4f6b-81fa-82dcbca7e621",
+          "name": "vm-windows-on-mac",
+          "parentId": "main",
+          "claudeSessionId": "fef64c22-453f-4070-87bc-ccad442d859c",
+          "tmuxPaneId": "%3",
+          "status": "active",
+          "createdAt": "2026-01-23T22:28:06.153Z"
+        }
+      ],
+      "ttydPort": 4445,
+      "ttydPid": 4337
+    }
+  ],
+  "lastUpdated": "2026-01-24T12:05:24.323Z"
+}
