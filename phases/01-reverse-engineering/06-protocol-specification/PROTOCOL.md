@@ -493,6 +493,64 @@ Host                           G9.2tt
   │                               │
 ```
 
+### Bulk Write (Send All to G9.2tt)
+
+**Discovered 2026-01-25 via bidirectional capture.**
+
+The bulk write uses a "pull" protocol where the pedal controls the transfer flow.
+The pedal requests each patch sequentially and the host responds with patch data
+in the same nibble-encoded format (0x21) used for read responses.
+
+```
+Host (G9ED)                    G9.2tt
+  │                               │
+  │─── Identity Request ─────────▶│  F0 7E 00 06 01 F7
+  │◀── Identity Response ─────────│  F0 7E 00 06 02 52 42 ... F7
+  │                               │
+  │─── EDIT_ENTER (0x12) ────────▶│  F0 52 00 42 12 F7
+  │                               │
+  │◀── READ_REQ patch 0 ──────────│  F0 52 00 42 11 00 F7  (pedal requests)
+  │─── READ_RESP patch 0 ────────▶│  F0 52 00 42 21 00 [256 nibbles] [5 chk] F7
+  │                               │
+  │◀── READ_REQ patch 1 ──────────│  F0 52 00 42 11 01 F7
+  │─── READ_RESP patch 1 ────────▶│  F0 52 00 42 21 01 [256 nibbles] [5 chk] F7
+  │                               │
+  │         ... repeat for patches 2-99 ...
+  │                               │
+  │◀── EDIT_EXIT (0x1F) ──────────│  F0 52 00 42 1F F7  (pedal signals done)
+  │                               │
+```
+
+**Key points:**
+- Pedal initiates each transfer with READ_REQ (0x11)
+- Host responds with READ_RESP (0x21) containing nibble-encoded data
+- Same 268-byte format as read responses: 6-byte header + 256 nibbles + 5 checksum + F7
+- Transfer rate: ~100ms per patch, ~10 seconds for all 100 patches
+- Pedal sends EDIT_EXIT when bulk transfer is complete
+
+**Note:** This is different from single patch write which uses command 0x28 (7-bit encoded).
+
+### Bulk Read (Receive All from G9.2tt)
+
+Standard read protocol repeated for all patches:
+
+```
+Host                           G9.2tt
+  │                               │
+  │─── Identity Request ─────────▶│
+  │◀── Identity Response ─────────│
+  │                               │
+  │─── READ_REQ patch 0 ─────────▶│  F0 52 00 42 11 00 F7
+  │◀── READ_RESP patch 0 ─────────│  F0 52 00 42 21 00 [...] F7
+  │                               │
+  │─── READ_REQ patch 1 ─────────▶│
+  │◀── READ_RESP patch 1 ─────────│
+  │         ... x100 ...          │
+  │                               │
+  │─── EDIT_EXIT ────────────────▶│  F0 52 00 42 1F F7
+  │                               │
+```
+
 ---
 
 ## 9. Code Examples

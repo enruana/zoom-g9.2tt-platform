@@ -28,9 +28,17 @@ Documentar completamente el protocolo de comunicación MIDI entre el software G9
 | 0x11 | 7 | Read Patch Request |
 | 0x12 | 6 | Enter Edit Mode |
 | 0x1F | 6 | Exit Edit Mode |
-| 0x21 | 268 | Read Patch Response |
-| 0x28 | 153 | Write/Preview Patch Data |
+| 0x21 | 268 | Read Patch Response (también usado en Bulk Write) |
+| 0x28 | 153 | Write/Preview Patch Data (single patch) |
 | 0x31 | 10 | Parameter Change / Select Patch |
+
+### Protocolos de Transferencia
+
+| Operación | Protocolo | Notas |
+|-----------|-----------|-------|
+| Bulk Read | Host envía 0x11, pedal responde 0x21 | Host controla |
+| Bulk Write | Host envía 0x12, pedal pide con 0x11, host responde 0x21 | **Pedal controla (pull)** |
+| Single Write | Host usa 0x28 + 0x31 | 7-bit encoded |
 
 ### Formatos de Datos
 
