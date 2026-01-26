@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+setup.py
+zoomg9/__init__.py
+zoomg9/constants.py
+zoomg9/device.py
+zoomg9/effects.py
+zoomg9/encoding.py
+zoomg9/patch.py
+zoomg9/protocol.py
+zoomg9.egg-info/PKG-INFO
+zoomg9.egg-info/SOURCES.txt
+zoomg9.egg-info/dependency_links.txt
+zoomg9.egg-info/entry_points.txt
+zoomg9.egg-info/requires.txt
+zoomg9.egg-info/top_level.txt

@@ -1,0 +1,2 @@
+[console_scripts]
+zoomg9 = zoomg9.cli:main

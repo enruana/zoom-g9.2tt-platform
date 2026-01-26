@@ -1,0 +1,313 @@
+Metadata-Version: 2.4
+Name: zoomg9
+Version: 0.1.0
+Summary: Python library for Zoom G9.2tt MIDI communication
+Author: Andres Mantilla
+License: MIT
+Project-URL: Homepage, https://github.com/amantilla/zoom-g9.2tt-platform
+Project-URL: Documentation, https://github.com/amantilla/zoom-g9.2tt-platform/tree/main/phases/02-python-library
+Project-URL: Repository, https://github.com/amantilla/zoom-g9.2tt-platform
+Project-URL: Issues, https://github.com/amantilla/zoom-g9.2tt-platform/issues
+Keywords: midi,zoom,g9.2tt,guitar,effects,sysex
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Multimedia :: Sound/Audio :: MIDI
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: mido>=1.2.0
+Requires-Dist: python-rtmidi>=1.5.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+
+# zoomg9 - Zoom G9.2tt Python Library
+
+A Python library for communicating with the Zoom G9.2tt Twin Tube Guitar Effects Console via MIDI SysEx.
+
+## Features
+
+- Read and write patches
+- Real-time parameter control
+- Bulk backup and restore
+- Clean, Pythonic API
+- Full effect module support (AMP, Delay, Reverb, etc.)
+
+## Installation
+
+```bash
+# From the library directory
+pip install -e .
+
+# Or install dependencies manually
+pip install mido python-rtmidi
+```
+
+## Quick Start
+
+```python
+from zoomg9 import G9Device, Patch
+
+# Connect to device
+device = G9Device()
+device.connect()
+
+# Read a patch
+patch = device.read_patch(0)
+print(patch.name)           # "Clean Tone"
+print(patch.amp.type_name)  # "Fender Clean"
+print(patch.amp.gain)       # 50
+
+# Modify parameters
+patch.amp.gain = 80
+patch.delay.time = 500
+patch.delay.mix = 30
+
+# Write back
+device.write_patch(0, patch)
+
+# Real-time control
+device.set_parameter("amp", "gain", 70)
+
+# Disconnect
+device.disconnect()
+```
+
+### Context Manager
+
+```python
+from zoomg9 import G9Device
+
+with G9Device() as device:
+    patch = device.read_patch(0)
+    print(patch.summary())
+```
+
+## API Reference
+
+### G9Device
+
+Main class for device communication.
+
+```python
+# List MIDI ports
+ports = G9Device.list_ports()
+print(ports['input'], ports['output'])
+
+# Connect
+device = G9Device(port_name="USB MIDI")  # Optional specific port
+device.connect()
+
+# Read/Write patches
+patch = device.read_patch(0)      # Read patch 0
+device.write_patch(0, patch)      # Write to patch 0
+
+# Real-time control
+device.set_parameter("amp", "gain", 80)
+device.set_parameter("delay", "time", 500)
+device.set_parameter("reverb", "mix", 30)
+
+# Bulk operations
+all_patches = device.read_all()   # Read all 100 patches
+device.write_all(all_patches)     # Write all 100 patches
+
+# Disconnect
+device.disconnect()
+```
+
+### Patch
+
+Represents a complete patch with all effect modules.
+
+```python
+from zoomg9 import Patch
+
+# Create new patch
+patch = Patch(name="My Tone")
+
+# Global settings
+patch.level = 80        # 0-100
+patch.tempo = 120       # 40-250 BPM
+patch.amp_sel = 0       # 0=A, 1=B
+
+# Access effect modules
+patch.amp_a            # AmpModule (channel A)
+patch.amp_b            # AmpModule (channel B)
+patch.amp              # Currently selected amp (A or B)
+patch.comp             # CmpModule (compressor)
+patch.wah              # WahModule
+patch.ext              # ExtModule (external loop)
+patch.znr_a            # ZnrModule (channel A)
+patch.znr_b            # ZnrModule (channel B)
+patch.eq_a             # EqModule (channel A)
+patch.eq_b             # EqModule (channel B)
+patch.cab              # CabModule (cabinet)
+patch.mod              # ModModule (modulation)
+patch.delay            # DlyModule
+patch.reverb           # RevModule
+
+# Serialize
+data = patch.to_bytes()           # 128 bytes
+patch = Patch.from_bytes(data)    # Deserialize
+```
+
+### Effect Modules
+
+Each effect module has on/off, type, and specific parameters.
+
+#### AmpModule (44 types)
+```python
+patch.amp_a.on = True
+patch.amp_a.type = 10        # MS #1959
+patch.amp_a.type_name        # "MS #1959"
+patch.amp_a.gain = 80        # 0-100
+patch.amp_a.tone = 15        # 0-30
+patch.amp_a.level = 70       # 0-99
+```
+
+#### DlyModule (7 types)
+```python
+patch.delay.on = True
+patch.delay.type = 0         # Delay
+patch.delay.time = 500       # 0-5022 ms
+patch.delay.feedback = 30    # 0-50
+patch.delay.hidamp = 5       # 0-10
+patch.delay.mix = 25         # 0-50
+```
+
+#### RevModule (15 types)
+```python
+patch.reverb.on = True
+patch.reverb.type = 0        # Hall
+patch.reverb.decay = 15      # 0-29
+patch.reverb.predelay = 50   # 0-99 ms
+patch.reverb.tone = 5        # 0-10
+patch.reverb.mix = 25        # 0-50
+```
+
+#### EqModule (6-band)
+```python
+patch.eq_a.on = True
+patch.eq_a.bands = [16, 16, 20, 16, 12, 16]  # 0-31 each (16=flat)
+patch.eq_a.set_band(3, 20)   # Set band 3 to +4dB
+```
+
+## Effect Types
+
+### Amplifiers (44 types)
+Fender Clean, VOX Clean, JC Clean, HiWatt Clean, UK Blues, US Blues, Tweed Bass, BG Crunch, VOX Crunch, Z Combo, MS #1959, MS Crunch, MS Drive, Rect Clean/Vintage/Modern, HK Clean/Crunch/Drive, DZ Clean/Crunch/Drive, ENGL Drive, PV Drive, Z Stack, OD-1, TS808, Centaur, RAT, DS-1, GuvPlus, Fuzz Face, Hot Box, Metal Zone, Sansamp, Z Metal, Combo 1-6, Z Clean, Aco.Sim
+
+### Modulation (28 types)
+Chorus, StereoChorus, Ensemble, ModDelay, Flanger, PitchShifter, PedalPitch, Vibrato, Step, Delay, TapeEcho, DynamicDelay, DynamicFlanger, MonoPitch, HarmonizedPitchShifter, PedalMonoPitch, Cry, ReverseDelay, BendChorus, CombFilter, Air, Z-Echo, X-Flanger, X-Step, Z-Step, Z-Pitch, Z-MonoPitch, Z-Talking
+
+### Delay (7 types)
+Delay, PingPongDelay, Echo, PingPongEcho, AnalogDelay, ReverseDelay, Air
+
+### Reverb (15 types)
+Hall, Room, Spring, Arena, TiledRoom, ModernSpring, EarlyReflection, MultiTapDelay, PanningDelay, PingPongDelay, PingPongEcho, AutoPan, Z-Delay, Z-Dimension, Z-Tornado
+
+## Examples
+
+### Read and modify a patch
+```python
+from zoomg9 import G9Device
+
+with G9Device() as device:
+    # Read patch
+    patch = device.read_patch(0)
+    print(f"Patch: {patch.name}")
+    print(f"Amp: {patch.amp.type_name} (gain={patch.amp.gain})")
+
+    # Modify
+    patch.name = "Heavy Metal"
+    patch.amp_a.type = 23      # PV Drive
+    patch.amp_a.gain = 90
+    patch.delay.on = True
+    patch.delay.mix = 20
+
+    # Write back
+    device.write_patch(0, patch)
+```
+
+### Backup all patches
+```python
+from zoomg9 import G9Device
+import json
+
+with G9Device() as device:
+    patches = device.read_all()
+
+    # Save to JSON
+    backup = []
+    for i, p in enumerate(patches):
+        backup.append({
+            "number": i,
+            "name": p.name,
+            "data": p.to_bytes().hex()
+        })
+
+    with open("backup.json", "w") as f:
+        json.dump(backup, f)
+```
+
+### Real-time parameter sweep
+```python
+from zoomg9 import G9Device
+import time
+
+with G9Device() as device:
+    # Sweep gain from 0 to 100
+    for gain in range(0, 101, 5):
+        device.set_parameter("amp", "gain", gain)
+        time.sleep(0.05)
+```
+
+## Low-Level Access
+
+For advanced users, the library exposes low-level functions:
+
+```python
+from zoomg9 import (
+    encode_nibbles, decode_nibbles,
+    encode_7bit, decode_7bit,
+    pack_bits, unpack_bits,
+    build_read_request,
+    build_write_data,
+    build_param_change,
+)
+
+# Build raw SysEx messages
+msg = build_read_request(0)      # Request patch 0
+msg = build_param_change(0x05, 0x02, 80)  # AMP gain = 80
+
+# Encoding functions
+nibbles = encode_nibbles(data)   # 128 -> 256 bytes
+data = decode_nibbles(nibbles)   # 256 -> 128 bytes
+encoded = encode_7bit(data)      # 128 -> 147 bytes
+data = decode_7bit(encoded)      # 147 -> 128 bytes
+```
+
+## Protocol Reference
+
+See [PROTOCOL.md](../phases/01-reverse-engineering/06-protocol-specification/PROTOCOL.md) for the complete MIDI protocol specification.
+
+## Requirements
+
+- Python 3.8+
+- mido >= 1.2.0
+- python-rtmidi >= 1.5.0
+
+## License
+
+MIT License
