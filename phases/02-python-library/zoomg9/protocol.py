@@ -155,6 +155,9 @@ def build_read_response(patch_num: int, patch_data: bytes) -> bytes:
     Command 0x21: Patch data in nibble-encoded format.
     Used when the device requests patches during bulk write.
 
+    The checksum is CRC-32 of the 128 decoded bytes, encoded as 5 bytes of 7-bit values.
+    Algorithm discovered by disassembling G9ED.exe (2026-01-26).
+
     Args:
         patch_num: Patch number (0-99)
         patch_data: 128 bytes raw patch data
@@ -162,15 +165,15 @@ def build_read_response(patch_num: int, patch_data: bytes) -> bytes:
     Returns:
         268-byte SysEx message
     """
+    from .encoding import calculate_checksum
+
     if not 0 <= patch_num <= 99:
         raise ValueError(f"Patch number must be 0-99, got {patch_num}")
     if len(patch_data) != 128:
         raise ValueError(f"Patch data must be 128 bytes, got {len(patch_data)}")
 
     nibbles = encode_nibbles(patch_data)
-
-    # Calculate simple checksum (may need refinement)
-    checksum = bytes([0x00] * 5)
+    checksum = calculate_checksum(patch_data)
 
     return _build_sysex(CMD_READ_RESPONSE, bytes([patch_num]) + nibbles + checksum)
 

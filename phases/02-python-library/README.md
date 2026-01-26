@@ -7,17 +7,20 @@ A Python library for communicating with the Zoom G9.2tt Twin Tube Guitar Effects
 ### ✅ Funciona
 
 - **Lectura de patches**: Leer cualquier patch individual o todos los 100
+- **Escritura de patches**: Escribir patches modificados al pedal (checksum CRC-32 descifrado)
 - **Control en tiempo real**: Cambiar parámetros del patch activo (comando 0x31)
 - **Selección de patch**: Cambiar el patch activo (Program Change)
 - **Identificación**: Consultar info del dispositivo
-- **Bulk round-trip**: Leer todos los patches y escribirlos de vuelta sin modificaciones
+- **Bulk operations**: Leer y escribir todos los patches
 
-### ❌ No Funciona (Pendiente)
+### Checksum Resuelto
 
-- **Escritura de patches modificados**: El checksum de 5 bytes no ha sido descifrado
-- El pedal valida el checksum y rechaza datos con checksum incorrecto
+El algoritmo de checksum de 5 bytes fue descifrado el 2026-01-26 mediante ingeniería inversa de G9ED.exe:
+- **Algoritmo**: CRC-32 estándar (polinomio 0xEDB88320, init 0xFFFFFFFF)
+- **Datos**: Se calcula sobre los 128 bytes decodificados del patch
+- **Codificación**: El CRC de 32 bits se codifica en 5 bytes de 7 bits cada uno
 
-Ver [CHECKSUM.md](CHECKSUM.md) para detalles del problema.
+Ver [CHECKSUM.md](CHECKSUM.md) para detalles técnicos.
 
 ## Installation
 
@@ -55,16 +58,18 @@ from zoomg9 import G9Device
 device = G9Device()
 device.connect()
 
-# ✅ Funciona
+# Lectura
 device.identity()                    # Info del dispositivo
-device.select_patch(10)              # Cambiar patch activo
 patch = device.read_patch(0)         # Leer un patch
 patches = device.read_all()          # Leer todos los patches
-device.set_parameter("amp", "gain", 80)  # Control en tiempo real
 
-# ❌ No implementado (checksum)
-device.write_patch(0, patch)         # NotImplementedError
-device.write_all(patches)            # NotImplementedError
+# Escritura (requiere BULK RX mode en el pedal)
+device.write_patch(0, patch)         # Escribir un patch
+device.write_all(patches)            # Escribir todos los patches
+
+# Control en tiempo real
+device.select_patch(10)              # Cambiar patch activo
+device.set_parameter("amp", "gain", 80)  # Modificar parámetro
 
 device.disconnect()
 ```

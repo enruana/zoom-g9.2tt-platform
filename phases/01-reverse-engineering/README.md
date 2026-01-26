@@ -6,7 +6,7 @@ Esta fase documenta el proceso completo de ingeniería inversa del protocolo MID
 
 Documentar completamente el protocolo de comunicación MIDI entre el software G9ED y el pedal G9.2tt para poder replicarlo en una aplicación web moderna.
 
-## Estado: ✅ Completo (2026-01-25)
+## Estado: ✅ Completo (2026-01-26)
 
 ## Pasos
 
@@ -18,6 +18,7 @@ Documentar completamente el protocolo de comunicación MIDI entre el software G9
 | 04 | [Análisis del Protocolo](04-protocol-analysis/) | ✅ Completo | Decodificar comandos SysEx |
 | 05 | [Mapeo de Efectos](05-effect-mapping/) | ✅ Completo | Identificar IDs de efectos y parámetros |
 | 06 | [Especificación Final](06-protocol-specification/) | ✅ Completo | Documentación completa del protocolo |
+| 07 | [Análisis del Checksum](07-checksum-analysis/) | ✅ Completo | CRC-32 descifrado via ingeniería inversa de G9ED.exe |
 
 ## Resumen de Descubrimientos
 
@@ -116,5 +117,6 @@ Documentar completamente el protocolo de comunicación MIDI entre el software G9
 2. ~~Documentar rangos de valores~~ ✅ (2026-01-25)
 3. ~~Mapear Parameter IDs completos~~ ✅ (2026-01-25)
 4. ~~Crear especificación final (PROTOCOL.md)~~ ✅ (2026-01-25)
+5. ~~Descifrar checksum~~ ✅ (2026-01-26) - CRC-32 via ingeniería inversa de G9ED.exe
 
-**Siguiente:** [Fase 2 - Librería Python](../02-python-library/)
+**Siguiente:** [Fase 2 - Librería Python](../02-python-library/) (100% funcional)

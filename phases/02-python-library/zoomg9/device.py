@@ -10,12 +10,8 @@ FUNCIONALIDAD PROBADA (2026-01-26):
     ✓ read_patch - Leer un patch
     ✓ read_all - Leer todos los patches
     ✓ set_parameter - Control en tiempo real (comando 0x31)
-
-NO FUNCIONA (checksum no descifrado):
-    ✗ write_patch - El checksum de 5 bytes no está resuelto
-    ✗ write_all - Requiere write_patch
-
-Ver CHECKSUM.md para detalles del problema pendiente.
+    ✓ write_patch - Escribir patch via bulk write (checksum CRC-32 descifrado 2026-01-26)
+    ✓ write_all - Escribir todos los patches
 """
 
 import time
@@ -280,24 +276,31 @@ class G9Device:
 
     def write_patch(self, patch_num: int, patch: Patch):
         """
-        Write a patch to the device.
+        Write a single patch to the device using bulk write protocol.
 
-        **NO IMPLEMENTADO**: El checksum de 5 bytes no ha sido descifrado.
-        El pedal valida el checksum y rechaza datos con checksum incorrecto.
+        This method uses the bulk write protocol where:
+        1. Host sends ENTER_EDIT (0x12)
+        2. Pedal (in BULK RX mode) sends READ_REQ (0x11) for each patch
+        3. Host responds with READ_RESP (0x21) containing the patch data
 
-        Ver CHECKSUM.md para detalles.
+        IMPORTANT: The pedal must be in BULK RX mode before calling this method.
 
         Args:
             patch_num: Patch number (0-99)
             patch: Patch object to write
 
         Raises:
-            NotImplementedError: Siempre (checksum no resuelto)
+            G9DeviceError: If write fails
+            ValueError: If patch_num is out of range
         """
-        raise NotImplementedError(
-            "write_patch no está implementado: el algoritmo de checksum "
-            "de 5 bytes no ha sido descifrado. Ver CHECKSUM.md"
-        )
+        if not 0 <= patch_num <= 99:
+            raise ValueError(f"Patch number must be 0-99, got {patch_num}")
+
+        # For single patch write, we need to do a full bulk write
+        # but only modify the requested patch
+        patches = self.read_all()
+        patches[patch_num] = patch
+        self.write_all(patches)
 
     def set_parameter(self, effect: str, param: str, value: int):
         """
@@ -388,26 +391,76 @@ class G9Device:
     def write_all(
         self,
         patches: List[Patch],
-        progress_callback: Optional[Callable[[int, int], None]] = None
+        progress_callback: Optional[Callable[[int, int], None]] = None,
+        timeout: float = 5.0
     ):
         """
-        Write all patches to the device.
+        Write all patches to the device using bulk write protocol.
 
-        **NO IMPLEMENTADO**: Requiere write_patch que no funciona.
+        Protocol (discovered by analyzing G9ED):
+        1. Host sends ENTER_EDIT (0x12)
+        2. User puts pedal in BULK RX mode
+        3. Pedal sends READ_REQ (0x11) for each patch it wants
+        4. Host responds with READ_RESP (0x21) containing patch data + CRC-32 checksum
+        5. Pedal sends EXIT_EDIT (0x1F) when done
 
-        Ver CHECKSUM.md para detalles.
+        IMPORTANT: The pedal must be in BULK RX mode before calling this method.
+        The method will wait for the pedal to request patches.
 
         Args:
             patches: List of 100 Patch objects
             progress_callback: Optional callback(current, total) for progress updates
+            timeout: Timeout in seconds waiting for pedal requests
 
         Raises:
-            NotImplementedError: Siempre (checksum no resuelto)
+            G9DeviceError: If write fails or times out
+            ValueError: If patches list is not exactly 100 items
         """
-        raise NotImplementedError(
-            "write_all no está implementado: el algoritmo de checksum "
-            "de 5 bytes no ha sido descifrado. Ver CHECKSUM.md"
-        )
+        if len(patches) != PATCH_COUNT:
+            raise ValueError(f"Expected {PATCH_COUNT} patches, got {len(patches)}")
+
+        # Convert patches to raw bytes
+        patches_data = [p.to_bytes() for p in patches]
+
+        # Send ENTER_EDIT to signal we're ready
+        self._send_sysex(build_enter_edit())
+
+        count = 0
+        consecutive_errors = 0
+
+        while True:
+            # Wait for pedal to request a patch
+            response = self._receive_sysex(timeout=timeout)
+
+            if not response:
+                consecutive_errors += 1
+                if consecutive_errors >= 3:
+                    if count == 0:
+                        raise G9DeviceError(
+                            "No response from pedal. Make sure it's in BULK RX mode."
+                        )
+                    break
+                continue
+
+            consecutive_errors = 0
+            cmd = response[4] if len(response) > 4 else 0
+
+            if cmd == 0x11:  # READ_REQ - pedal requesting a patch
+                patch_num = response[5]
+                if 0 <= patch_num < PATCH_COUNT:
+                    # Build and send READ_RESP with correct checksum
+                    resp = build_read_response(patch_num, patches_data[patch_num])
+                    self._send_sysex(resp)
+                    count += 1
+
+                    if progress_callback:
+                        progress_callback(count, PATCH_COUNT)
+
+            elif cmd == 0x1F:  # EXIT_EDIT - pedal is done
+                break
+
+        if count != PATCH_COUNT:
+            raise G9DeviceError(f"Only wrote {count}/{PATCH_COUNT} patches")
 
     def __enter__(self):
         """Context manager entry."""

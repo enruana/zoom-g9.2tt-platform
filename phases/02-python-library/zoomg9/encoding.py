@@ -238,23 +238,112 @@ def pack_bits(matrix: list) -> bytes:
 
 def calculate_checksum(data: bytes) -> bytes:
     """
-    Calculate the 5-byte checksum for a patch read response.
+    Calculate the 5-byte CRC-32 checksum for a patch read response.
+
+    Algorithm discovered by disassembling G9ED.exe (2026-01-26):
+    1. Calculate CRC-32 over the 128 decoded bytes
+    2. Encode the 32-bit CRC as 5 bytes of 7-bit values
 
     The checksum appears after the 256 nibbles in a 0x21 response.
 
     Args:
-        data: The patch data to checksum
+        data: 128 bytes of decoded patch data
 
     Returns:
-        5 bytes of checksum data
+        5 bytes of checksum (7-bit encoded CRC-32)
     """
-    # Based on reverse engineering, the checksum is a simple sum
-    # split across multiple bytes. Format needs verification.
-    total = sum(data) & 0xFFFF
+    if len(data) != 128:
+        raise ValueError(f"Expected 128 bytes, got {len(data)}")
+
+    crc = _calculate_crc32(data)
+    return _encode_crc_7bit(crc)
+
+
+# CRC-32 implementation (standard polynomial 0xEDB88320)
+_CRC32_TABLE = None
+
+
+def _init_crc32_table():
+    """Initialize the CRC-32 lookup table."""
+    global _CRC32_TABLE
+    if _CRC32_TABLE is not None:
+        return
+
+    poly = 0xEDB88320
+    table = []
+    for i in range(256):
+        crc = i
+        for _ in range(8):
+            if crc & 1:
+                crc = (crc >> 1) ^ poly
+            else:
+                crc >>= 1
+        table.append(crc)
+    _CRC32_TABLE = table
+
+
+def _calculate_crc32(data: bytes, init: int = 0xFFFFFFFF) -> int:
+    """
+    Calculate CRC-32 over data bytes.
+
+    Uses standard CRC-32 algorithm with polynomial 0xEDB88320
+    and initial value 0xFFFFFFFF (as in G9ED.exe).
+
+    Args:
+        data: Bytes to calculate CRC over
+        init: Initial CRC value (default 0xFFFFFFFF)
+
+    Returns:
+        32-bit CRC value
+    """
+    _init_crc32_table()
+    crc = init
+    for byte in data:
+        crc = _CRC32_TABLE[(crc ^ byte) & 0xFF] ^ ((crc >> 8) & 0x00FFFFFF)
+    return crc
+
+
+def _encode_crc_7bit(crc: int) -> bytes:
+    """
+    Encode a 32-bit CRC as 5 bytes of 7-bit values.
+
+    The G9.2tt uses 7-bit encoding for MIDI safety:
+    - Byte 0: bits 0-6
+    - Byte 1: bits 7-13
+    - Byte 2: bits 14-20
+    - Byte 3: bits 21-27
+    - Byte 4: bits 28-31 (only 4 bits used)
+
+    Args:
+        crc: 32-bit CRC value
+
+    Returns:
+        5 bytes, each < 128 (MIDI-safe)
+    """
     return bytes([
-        (total >> 8) & 0x7F,
-        total & 0x7F,
-        0x00,
-        0x00,
-        0x00,
+        crc & 0x7F,
+        (crc >> 7) & 0x7F,
+        (crc >> 14) & 0x7F,
+        (crc >> 21) & 0x7F,
+        (crc >> 28) & 0x7F,
     ])
+
+
+def _decode_crc_7bit(checksum_bytes: bytes) -> int:
+    """
+    Decode 5 bytes of 7-bit values to a 32-bit CRC.
+
+    Args:
+        checksum_bytes: 5 bytes of 7-bit encoded CRC
+
+    Returns:
+        32-bit CRC value
+    """
+    if len(checksum_bytes) != 5:
+        raise ValueError(f"Expected 5 bytes, got {len(checksum_bytes)}")
+
+    return (checksum_bytes[0] |
+            (checksum_bytes[1] << 7) |
+            (checksum_bytes[2] << 14) |
+            (checksum_bytes[3] << 21) |
+            (checksum_bytes[4] << 28))
