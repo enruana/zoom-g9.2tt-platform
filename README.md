@@ -14,10 +14,25 @@ Crear un editor web moderno que reemplace al software original G9ED (Windows XP,
 
 | Fase | Estado | Descripción |
 |------|--------|-------------|
-| [01 - Ingeniería Inversa](phases/01-reverse-engineering/) | 🔄 En progreso | Documentar protocolo MIDI SysEx completo |
-| [02 - Librería Python](phases/02-python-library/) | ⏳ Pendiente | API Python para comunicación con el pedal |
-| [03 - Editor Web](phases/03-web-editor/) | ⏳ Pendiente | Interfaz web con Web MIDI API |
+| [01 - Ingeniería Inversa](phases/01-reverse-engineering/) | ✅ Completo | Protocolo MIDI SysEx documentado completamente |
+| [02 - Librería Python](phases/02-python-library/) | ✅ Completo | API Python funcional para lectura/escritura/control real-time |
+| [03 - Editor Web](zoom-g9.2tt-web/) | 🔄 En progreso | Interfaz web con Web MIDI API + Online Mode |
 | [04 - Despliegue](phases/04-deployment/) | ⏳ Pendiente | Documentación y distribución |
+
+## Descubrimientos Clave
+
+### Edit Mode Requerido para Control en Tiempo Real (2026-01-27)
+
+Para que los comandos de cambio de parámetros (0x31) funcionen, el dispositivo **debe estar en Edit Mode**:
+
+```
+F0 52 00 42 12 F7   ← ENTER EDIT MODE (requerido!)
+F0 52 00 42 31 ...  ← Cambios de parámetros funcionan
+F0 52 00 42 1F F7   ← EXIT EDIT MODE (al terminar)
+```
+
+Sin el comando EDIT_ENTER (0x12), el pedal ignora silenciosamente los comandos 0x31.
+Ver [PROTOCOL.md](phases/01-reverse-engineering/06-protocol-specification/PROTOCOL.md) para detalles completos.
 
 ## Arquitectura
 

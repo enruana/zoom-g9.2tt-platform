@@ -11,6 +11,19 @@ Documento generado contrastando:
 F0 52 00 42 31 [EFFECT_ID] [PARAM_ID] [VALUE] 00 F7
 ```
 
+### Prerequisito: Edit Mode
+
+**IMPORTANTE:** El dispositivo debe estar en Edit Mode antes de que los comandos 0x31 funcionen.
+
+```
+F0 52 00 42 12 F7   ← Enviar primero (EDIT_ENTER)
+F0 52 00 42 31 ...  ← Ahora los cambios de parámetros funcionan
+F0 52 00 42 1F F7   ← Enviar al terminar (EDIT_EXIT)
+```
+
+Sin el comando EDIT_ENTER (0x12), el pedal ignora silenciosamente los comandos 0x31.
+Descubierto: 2026-01-27 mediante captura bidireccional de G9ED.
+
 ## Effect IDs
 
 | ID | Módulo | Descripción |

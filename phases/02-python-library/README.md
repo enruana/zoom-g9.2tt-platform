@@ -2,16 +2,24 @@
 
 A Python library for communicating with the Zoom G9.2tt Twin Tube Guitar Effects Console via MIDI SysEx.
 
-## Estado Actual (2026-01-26)
+## Estado Actual (2026-01-27)
 
 ### ✅ Funciona
 
 - **Lectura de patches**: Leer cualquier patch individual o todos los 100
 - **Escritura de patches**: Escribir patches modificados al pedal (checksum CRC-32 descifrado)
-- **Control en tiempo real**: Cambiar parámetros del patch activo (comando 0x31)
+- **Control en tiempo real**: Cambiar parámetros del patch activo (comando 0x31) ✨ *Corregido 2026-01-27*
 - **Selección de patch**: Cambiar el patch activo (Program Change)
 - **Identificación**: Consultar info del dispositivo
 - **Bulk operations**: Leer y escribir todos los patches
+
+### Corrección 2026-01-27: Edit Mode Requerido
+
+Se descubrió que el pedal requiere estar en **Edit Mode** (comando 0x12) antes de que
+los comandos de cambio de parámetros (0x31) funcionen. Sin este comando, el pedal
+ignora silenciosamente los cambios de parámetros.
+
+La librería ahora entra automáticamente en edit mode cuando se llama a `set_parameter()`.
 
 ### Checksum Resuelto
 
@@ -111,24 +119,37 @@ patch = Patch.from_bytes(data)    # Deserializar
 
 ### Control en Tiempo Real
 
-El comando `set_parameter` modifica el patch activo inmediatamente:
+El comando `set_parameter` modifica el patch activo inmediatamente.
+
+**IMPORTANTE:** El dispositivo debe estar en Edit Mode para que los comandos 0x31 funcionen.
+La librería entra automáticamente en edit mode la primera vez que llamas a `set_parameter()`.
+Cuando termines, llama a `exit_edit_mode()` o usa el context manager que lo hace automáticamente.
 
 ```python
-# Efectos disponibles
-device.set_parameter("amp", "gain", 80)      # 0-100
-device.set_parameter("amp", "tone", 15)      # 0-30
-device.set_parameter("amp", "level", 70)     # 0-99
-device.set_parameter("amp", "type", 10)      # 0-43
+# Usando context manager (recomendado) - exit_edit_mode se llama automáticamente
+with G9Device() as device:
+    device.set_parameter("amp", "gain", 80)      # Auto-entra en edit mode
+    device.set_parameter("amp", "tone", 15)      # 0-30
+    device.set_parameter("amp", "level", 70)     # 0-99
+    device.set_parameter("amp", "type", 10)      # 0-43
 
-device.set_parameter("delay", "time", 500)   # 0-5022 ms
-device.set_parameter("delay", "feedback", 30) # 0-50
-device.set_parameter("delay", "mix", 25)     # 0-50
+    device.set_parameter("delay", "time", 500)   # 0-5022 ms
+    device.set_parameter("delay", "feedback", 30) # 0-50
+    device.set_parameter("delay", "mix", 25)     # 0-50
 
-device.set_parameter("reverb", "decay", 15)  # 0-29
-device.set_parameter("reverb", "mix", 25)    # 0-50
+    device.set_parameter("reverb", "decay", 15)  # 0-29
+    device.set_parameter("reverb", "mix", 25)    # 0-50
 
-device.set_parameter("comp", "sense", 30)    # 0-50
-device.set_parameter("mod", "depth", 50)     # 0-127
+    device.set_parameter("comp", "sense", 30)    # 0-50
+    device.set_parameter("mod", "depth", 50)     # 0-127
+# exit_edit_mode() se llama aquí automáticamente
+
+# Sin context manager - debes llamar exit_edit_mode manualmente
+device = G9Device()
+device.connect()
+device.set_parameter("amp", "gain", 80)
+device.exit_edit_mode()  # Importante: salir del edit mode cuando termines
+device.disconnect()
 ```
 
 ## Examples

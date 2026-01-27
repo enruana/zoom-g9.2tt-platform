@@ -306,6 +306,9 @@ class G9Device:
         """
         Set an effect parameter in real-time.
 
+        NOTE: The device must be in edit mode for this to work.
+        This method automatically enters edit mode if not already in it.
+
         Args:
             effect: Effect name (amp, delay, reverb, etc.)
             param: Parameter name (gain, time, mix, etc.)
@@ -314,6 +317,9 @@ class G9Device:
         Raises:
             ValueError: If effect/param not found or value out of range
         """
+        # Enter edit mode if not already (required for 0x31 commands to work)
+        if not self._in_edit_mode:
+            self.enter_edit_mode()
         # Map effect name to ID
         effect_map = {
             "top": 0x00,

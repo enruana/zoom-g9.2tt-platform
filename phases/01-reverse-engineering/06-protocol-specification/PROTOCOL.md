@@ -116,13 +116,18 @@ F0 52 00 42 11 [PATCH] F7
 
 ### 0x12 - Enter Edit Mode
 
-Enter editing mode (required before write operations).
+Enter editing mode. **Required before:**
+- Write operations (0x28)
+- Real-time parameter changes (0x31)
+
+Without this command, the device will silently ignore parameter change commands.
 
 ```
 F0 52 00 42 12 F7
 ```
 
 **Length:** 6 bytes
+**Response:** None (device enters edit mode silently)
 
 ### 0x1F - Exit Edit Mode
 
@@ -485,13 +490,32 @@ Host                           G9.2tt
 
 ### Real-Time Parameter Change
 
+**IMPORTANT:** The device must be in Edit Mode (0x12) before parameter change commands (0x31) will be accepted. This was discovered on 2026-01-27 through bidirectional MIDI capture.
+
 ```
 Host                           G9.2tt
+  │                               │
+  │─── F0 52 00 42 12 F7 ────────▶│  ENTER EDIT MODE (required!)
   │                               │
   │─── F0 52 00 42 31 05 02 50 ──▶│  Set AMP Gain to 80
   │       (immediate effect)      │
   │                               │
+  │─── F0 52 00 42 31 01 00 00 ──▶│  Turn COMP Off
+  │                               │
+  │─── F0 52 00 42 31 01 00 01 ──▶│  Turn COMP On
+  │                               │
+  │        ... more changes ...   │
+  │                               │
+  │─── F0 52 00 42 1F F7 ────────▶│  EXIT EDIT MODE (when done)
+  │                               │
 ```
+
+**Key points:**
+- Must send EDIT_ENTER (0x12) before any parameter changes
+- Parameter changes take effect immediately (audible on pedal)
+- Multiple parameters can be changed while in edit mode
+- Send EXIT_EDIT (0x1F) when finished to return to normal operation
+- Without EDIT_ENTER, the 0x31 commands are silently ignored
 
 ### Bulk Write (Send All to G9.2tt)
 
@@ -581,15 +605,28 @@ def read_patch(port_name, patch_num):
 ### Set Parameter (Python)
 
 ```python
-def set_parameter(port_name, effect_id, param_id, value):
-    """Set effect parameter in real-time"""
-    with mido.open_output(port_name) as out:
-        # F0 52 00 42 31 [effect] [param] [value] 00 F7
-        data = [0x52, 0x00, 0x42, 0x31, effect_id, param_id, value, 0x00]
-        out.send(mido.Message('sysex', data=data))
+def enter_edit_mode(port):
+    """Enter edit mode - REQUIRED before parameter changes"""
+    port.send(mido.Message('sysex', data=[0x52, 0x00, 0x42, 0x12]))
+    time.sleep(0.1)
+
+def exit_edit_mode(port):
+    """Exit edit mode"""
+    port.send(mido.Message('sysex', data=[0x52, 0x00, 0x42, 0x1F]))
+
+def set_parameter(port, effect_id, param_id, value):
+    """Set effect parameter in real-time (must be in edit mode!)"""
+    # F0 52 00 42 31 [effect] [param] [value] 00 F7
+    data = [0x52, 0x00, 0x42, 0x31, effect_id, param_id, value, 0x00]
+    port.send(mido.Message('sysex', data=data))
 
 # Example: Set AMP Gain to 70
-set_parameter('USB MIDI', 0x05, 0x02, 70)
+with mido.open_output('USB MIDI') as out:
+    enter_edit_mode(out)          # REQUIRED!
+    set_parameter(out, 0x05, 0x02, 70)  # AMP Gain = 70
+    set_parameter(out, 0x01, 0x00, 1)   # COMP On
+    # ... more changes ...
+    exit_edit_mode(out)           # Clean up when done
 ```
 
 ### Write Patch (Python)
@@ -676,6 +713,7 @@ AutoWah, AutoResonance, Booster, Tremolo, Phaser, FixedPhaser, RingModulator, Sl
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 1.1 | 2026-01-27 | CRITICAL: Documented that EDIT_ENTER (0x12) is required before parameter changes (0x31) work |
 | 1.0 | 2026-01-25 | Initial release (reverse engineered) |
 
 ---

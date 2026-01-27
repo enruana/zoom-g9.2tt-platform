@@ -6,6 +6,10 @@ This example demonstrates how to:
 - Control parameters in real-time
 - Sweep through parameter values
 - Toggle effects on/off
+
+NOTE: The device must be in Edit Mode for parameter changes (0x31) to work.
+The library automatically enters edit mode when set_parameter() is called.
+When using the context manager, exit_edit_mode() is called automatically on exit.
 """
 
 import sys
