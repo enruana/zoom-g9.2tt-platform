@@ -38,3 +38,8 @@ npm-debug.log*
 # Temporary
 *.tmp
 *.temp
+
+
+# BMad
+_bmad/
+.claude/

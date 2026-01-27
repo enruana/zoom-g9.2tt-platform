@@ -1,0 +1,101 @@
+# generated: 2026-01-26
+# project: zoom-g9.2tt-platform
+# tracking_system: file-system
+# story_location: .bmad/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-01-26
+project: zoom-g9.2tt-platform
+tracking_system: file-system
+story_location: .bmad/implementation-artifacts
+
+development_status:
+  # Epic 1: Project Foundation
+  epic-1: done
+  1-1-initialize-vite-project-with-react-and-typescript: done
+  1-2-configure-tailwind-css: done
+  1-3-setup-firebase-configuration: done
+  1-4-create-project-structure-and-routing: done
+  epic-1-retrospective: optional
+
+  # Epic 2: Device Connection & Demo Mode
+  epic-2: done
+  2-1-create-device-context-and-connection-state-machine: done
+  2-2-implement-web-midi-service: done
+  2-3-build-splash-screen-with-connection-flow: done
+  2-4-implement-demo-mode-data-source: done
+  2-5-add-error-handling-and-troubleshooting-ui: done
+  2-6-implement-device-identification-and-g9tt-detection: done
+  epic-2-retrospective: optional
+
+  # Epic 3: Patch Browsing
+  epic-3: done
+  3-1-create-patch-context-and-data-types: done
+  3-2-implement-patch-reading-from-device: done
+  3-3-build-patch-list-ui: done
+  3-4-display-selected-patch-info: done
+  epic-3-retrospective: optional
+
+  # Epic 4: Parameter Editing
+  epic-4: done
+  4-1-build-pedalboard-module-grid: done
+  4-2-create-module-expansion-panel: done
+  4-3-implement-parameter-modal-with-slider: done
+  4-4-add-7-segment-display-and-precision-buttons: done
+  4-5-implement-effect-type-selector: done
+  4-6-send-real-time-parameter-changes-to-device: done
+  4-7-implement-undo-redo-history: done
+  epic-4-retrospective: optional
+
+  # Epic 5: Patch Persistence
+  epic-5: done
+  5-1-implement-patch-writing-to-device: done
+  5-2-add-save-patch-ui-and-confirmation: done
+  5-3-implement-patch-duplication: done
+  5-4-implement-patch-renaming: done
+  epic-5-retrospective: optional
+
+  # Epic 6: Authentication & Cloud Sync
+  epic-6: backlog
+  6-1-implement-firebase-authentication: backlog
+  6-2-add-auth-ui-components: backlog
+  6-3-implement-firestore-patch-storage: backlog
+  6-4-add-cloud-sync-functionality: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7: Visual Experience
+  epic-7: backlog
+  7-1-add-3d-g9tt-model-to-splash-screen: backlog
+  7-2-implement-particle-transition-animation: backlog
+  7-3-create-illustrated-pedalboard-design: backlog
+  7-4-add-visual-knobs-with-value-reflection: backlog
+  7-5-implement-reduced-motion-support: backlog
+  epic-7-retrospective: optional
