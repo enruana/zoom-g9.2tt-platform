@@ -2,7 +2,10 @@ import { useEffect, useCallback, useRef } from 'react';
 import type { ModuleName, ModuleState } from '../../types/patch';
 import { MODULE_INFO, getEffectTypeName, hasMultipleTypes } from '../../data/effectTypes';
 import { getEditableParameters } from '../../data/parameterMaps';
+import { MODULE_COLORS } from '../../data/moduleColors';
+import { Button, IconButton, ToggleButton } from '../common/Button';
 import { Knob } from '../parameter/Knob';
+import { EQSliderLarge } from '../parameter/EQSliderLarge';
 
 interface ModulePanelProps {
   moduleKey: ModuleName;
@@ -26,8 +29,9 @@ export function ModulePanel({
   const parameters = getEditableParameters(moduleKey, module.type);
   const typeName = getEffectTypeName(moduleKey, module.type);
   const canSelectType = hasMultipleTypes(moduleKey);
+  const isEQ = moduleKey === 'eq';
+  const colors = MODULE_COLORS[moduleKey];
 
-  // Handle ESC key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -39,115 +43,160 @@ export function ModulePanel({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // Handle click outside
   const handleBackdropClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   }, [onClose]);
 
-  // Focus panel on mount for keyboard accessibility
   useEffect(() => {
     panelRef.current?.focus();
   }, []);
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end justify-center"
       onClick={handleBackdropClick}
     >
+      {/* Backdrop with blur */}
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+      {/* Panel */}
       <div
         ref={panelRef}
-        className="w-full max-w-4xl bg-gray-800 border-t border-gray-700 rounded-t-2xl shadow-2xl animate-slide-up focus:outline-none"
+        className="relative w-full max-w-5xl bg-neutral-900 rounded-t-2xl shadow-2xl animate-slide-up focus:outline-none max-h-[70vh] flex flex-col"
+        style={{
+          borderTop: `3px solid ${colors.body}`,
+          boxShadow: `0 -4px 20px ${colors.body}33`,
+        }}
         tabIndex={-1}
         role="dialog"
         aria-label={`${info.fullName} settings`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 shrink-0">
           <div className="flex items-center gap-4">
+            {/* Module indicator (LED) */}
+            <div
+              className="w-4 h-4 rounded-full"
+              style={{
+                background: module.enabled
+                  ? `radial-gradient(circle at 30% 30%, ${colors.led} 0%, ${colors.led}99 100%)`
+                  : 'radial-gradient(circle at 30% 30%, #444 0%, #222 100%)',
+                boxShadow: module.enabled
+                  ? `0 0 12px ${colors.led}, 0 0 20px ${colors.led}44`
+                  : 'inset 0 1px 2px rgba(0,0,0,0.5)',
+              }}
+            />
+
             {/* Module Name */}
-            <h3 className="text-xl font-bold text-white">
+            <h3 className="text-xl font-bold" style={{ color: colors.text }}>
               {info.fullName}
             </h3>
 
             {/* ON/OFF Toggle */}
-            <button
+            <ToggleButton
+              isOn={module.enabled}
               onClick={onToggleEnabled}
-              className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
-                module.enabled
-                  ? 'bg-green-600 text-white hover:bg-green-500'
-                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-              }`}
-            >
-              {module.enabled ? 'ON' : 'OFF'}
-            </button>
+              accentColor={colors.body}
+              size="md"
+            />
           </div>
 
-          {/* Type Selector & Close */}
-          <div className="flex items-center gap-4">
-            {/* Effect Type */}
+          {/* Right side: Type & Close */}
+          <div className="flex items-center gap-3">
+            {/* Effect Type Selector */}
             {canSelectType && (
-              <button
+              <Button
                 onClick={onTypeSelect}
-                className="flex items-center gap-2 px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm text-gray-200 transition-colors"
+                variant="secondary"
+                size="sm"
+                icon={
+                  <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                }
+                iconPosition="right"
               >
-                <span className="text-gray-400">Type:</span>
-                <span className="font-medium">{typeName}</span>
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+                <span className="text-neutral-500">Type:</span>
+                <span className="font-medium text-white ml-1">{typeName}</span>
+              </Button>
             )}
 
             {/* Close Button */}
-            <button
+            <IconButton
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              variant="ghost"
+              size="md"
               aria-label="Close panel"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
-            </button>
+            </IconButton>
           </div>
         </div>
 
-        {/* Parameters */}
-        <div className="px-6 py-6 overflow-x-auto">
+        {/* Parameters - Scrollable */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8">
           {parameters.length > 0 ? (
-            <div className="flex flex-wrap justify-center gap-4">
-              {parameters.map((param, index) => {
-                // Get the parameter value from the module params array
-                // param.id is the MIDI parameter ID, we need to map it to the array index
-                // For editable params, they start at index 0 in the params array
-                const paramValue = module.params[index] ?? param.defaultValue ?? param.min;
-
-                return (
-                  <Knob
-                    key={param.id}
-                    parameter={param}
-                    value={paramValue}
-                    onClick={() => onParameterClick?.(index)}
-                    disabled={!module.enabled}
-                  />
-                );
-              })}
-            </div>
+            isEQ ? (
+              /* EQ: Vertical sliders in a row */
+              <div className="flex justify-center items-end gap-4">
+                {parameters.map((param, index) => {
+                  const paramValue = module.params[index] ?? param.defaultValue ?? param.min;
+                  return (
+                    <EQSliderLarge
+                      key={param.id}
+                      parameter={param}
+                      value={paramValue}
+                      onClick={() => onParameterClick?.(index)}
+                      disabled={!module.enabled}
+                      accentColor={colors.accent}
+                    />
+                  );
+                })}
+              </div>
+            ) : (
+              /* Other modules: Knobs */
+              <div className="flex flex-wrap justify-center gap-6">
+                {parameters.map((param, index) => {
+                  const paramValue = module.params[index] ?? param.defaultValue ?? param.min;
+                  return (
+                    <div
+                      key={param.id}
+                      className={`transition-opacity ${!module.enabled ? 'opacity-40' : ''}`}
+                    >
+                      <Knob
+                        parameter={param}
+                        value={paramValue}
+                        onClick={() => onParameterClick?.(index)}
+                        disabled={!module.enabled}
+                        accentColor={colors.accent}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )
           ) : (
-            <p className="text-center text-gray-500">
-              No editable parameters for this module.
-            </p>
+            <div className="flex items-center justify-center py-12">
+              <p className="text-neutral-600 text-lg">
+                No editable parameters for this module
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Footer Hint */}
-        <div className="px-6 py-3 border-t border-gray-700 text-center text-xs text-gray-500">
-          Click a knob to edit • Press ESC to close
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-neutral-800 text-center shrink-0">
+          <p className="text-xs text-neutral-600">
+            Click a knob to edit &bull; Press <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded text-neutral-400">ESC</kbd> to close
+          </p>
         </div>
       </div>
 
-      {/* CSS for slide-up animation */}
+      {/* Animation styles */}
       <style>{`
         @keyframes slide-up {
           from {
@@ -160,7 +209,7 @@ export function ModulePanel({
           }
         }
         .animate-slide-up {
-          animation: slide-up 0.2s ease-out;
+          animation: slide-up 0.25s ease-out;
         }
       `}</style>
     </div>

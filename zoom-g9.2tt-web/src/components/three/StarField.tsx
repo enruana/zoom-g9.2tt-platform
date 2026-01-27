@@ -35,6 +35,7 @@ function Stars({ count = 5000, radius = 100, speed = 0.0001, size = 0.15, color 
 }) {
   const meshRef = useRef<THREE.Points>(null);
 
+  /* eslint-disable react-hooks/purity -- Math.random is intentional for generating stable random star positions */
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
@@ -60,6 +61,7 @@ function Stars({ count = 5000, radius = 100, speed = 0.0001, size = 0.15, color 
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     return geo;
   }, [count, radius, color]);
+  /* eslint-enable react-hooks/purity */
 
   useFrame(() => {
     if (meshRef.current) {
@@ -84,98 +86,185 @@ function Stars({ count = 5000, radius = 100, speed = 0.0001, size = 0.15, color 
   );
 }
 
-// Single shooting star with trail using points
-function ShootingStar({ onComplete }: { onComplete: () => void }) {
-  const pointsRef = useRef<THREE.Points>(null);
+// Complete shooting star with trail and head glow
+function ShootingStarComplete({ onComplete }: { onComplete: () => void }) {
+  const meshRef = useRef<THREE.Mesh>(null);
   const progressRef = useRef(0);
-  const trailLength = 25;
+  const segmentCount = 64;
+  const [headPos, setHeadPos] = useState(new THREE.Vector3());
+  const [headOpacity, setHeadOpacity] = useState(0);
 
+  /* eslint-disable react-hooks/purity -- Math.random is intentional for unique shooting star trajectories */
   const config = useMemo(() => {
-    const startX = (Math.random() - 0.5) * 60;
-    const startY = 15 + Math.random() * 25;
-    const startZ = (Math.random() - 0.5) * 30 - 15;
+    const startX = (Math.random() - 0.5) * 50;
+    const startY = 12 + Math.random() * 25;
+    const startZ = (Math.random() - 0.5) * 20 - 10;
 
-    const dirX = (Math.random() - 0.5) * 1.5;
-    const dirY = -1 - Math.random() * 0.3;
-    const dirZ = (Math.random() - 0.5) * 0.3;
+    const angle = -Math.PI / 4 + (Math.random() - 0.5) * 0.6;
+    const dirX = Math.cos(angle) * (Math.random() > 0.5 ? 1 : -1);
+    const dirY = Math.sin(angle) - 0.6;
+    const dirZ = (Math.random() - 0.5) * 0.15;
 
     return {
       start: new THREE.Vector3(startX, startY, startZ),
       direction: new THREE.Vector3(dirX, dirY, dirZ).normalize(),
-      length: THREE.MathUtils.randFloat(20, 40),
-      speed: THREE.MathUtils.randFloat(0.012, 0.022),
+      length: THREE.MathUtils.randFloat(12, 22),
+      speed: THREE.MathUtils.randFloat(0.01, 0.018),
+      width: THREE.MathUtils.randFloat(0.06, 0.12),
     };
   }, []);
+  /* eslint-enable react-hooks/purity */
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-    const positions = new Float32Array(trailLength * 3);
-    const colors = new Float32Array(trailLength * 3);
-    const sizes = new Float32Array(trailLength);
+    const positions = new Float32Array(segmentCount * 2 * 3);
+    const alphas = new Float32Array(segmentCount * 2);
+    const uvs = new Float32Array(segmentCount * 2 * 2);
+    const indices: number[] = [];
+
+    for (let i = 0; i < segmentCount; i++) {
+      const t = i / (segmentCount - 1);
+      uvs[i * 4] = t;
+      uvs[i * 4 + 1] = 0;
+      uvs[i * 4 + 2] = t;
+      uvs[i * 4 + 3] = 1;
+    }
+
+    for (let i = 0; i < segmentCount - 1; i++) {
+      const a = i * 2;
+      const b = i * 2 + 1;
+      const c = i * 2 + 2;
+      const d = i * 2 + 3;
+      indices.push(a, b, c, b, d, c);
+    }
 
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geo.setAttribute('alpha', new THREE.BufferAttribute(alphas, 1));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    geo.setIndex(indices);
 
     return geo;
   }, []);
 
-  useFrame(() => {
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        opacity: { value: 1 },
+        color: { value: new THREE.Color(1, 1, 1) },
+      },
+      vertexShader: `
+        attribute float alpha;
+        varying float vAlpha;
+        varying vec2 vUv;
+
+        void main() {
+          vAlpha = alpha;
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float opacity;
+        uniform vec3 color;
+        varying float vAlpha;
+        varying vec2 vUv;
+
+        void main() {
+          float dist = abs(vUv.y - 0.5) * 2.0;
+          float glow = 1.0 - smoothstep(0.0, 1.0, dist);
+          glow = pow(glow, 1.2);
+
+          float lengthGlow = 1.0 - smoothstep(0.0, 0.3, vUv.x);
+          glow *= mix(1.0, 1.5, lengthGlow);
+
+          float finalAlpha = glow * vAlpha * opacity;
+          vec3 finalColor = mix(color, vec3(1.0, 1.0, 0.85), lengthGlow * 0.5);
+
+          gl_FragColor = vec4(finalColor, finalAlpha);
+        }
+      `,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+  }, []);
+
+  useFrame(({ camera }) => {
     progressRef.current += config.speed;
 
     const posAttr = geometry.getAttribute('position');
-    const colorAttr = geometry.getAttribute('color');
-    const sizeAttr = geometry.getAttribute('size');
+    const alphaAttr = geometry.getAttribute('alpha');
 
-    if (!posAttr || !colorAttr || !sizeAttr) return;
+    if (!posAttr || !alphaAttr) return;
 
     const positions = posAttr.array as Float32Array;
-    const colors = colorAttr.array as Float32Array;
-    const sizes = sizeAttr.array as Float32Array;
+    const alphas = alphaAttr.array as Float32Array;
 
-    for (let i = 0; i < trailLength; i++) {
-      const t = progressRef.current - i * 0.025;
-      const pos = config.start.clone().addScaledVector(config.direction, t * config.length);
+    const cameraRight = new THREE.Vector3();
+    cameraRight.setFromMatrixColumn(camera.matrixWorld, 0);
 
-      positions[i * 3] = pos.x;
-      positions[i * 3 + 1] = pos.y;
-      positions[i * 3 + 2] = pos.z;
+    const fadeIn = Math.min(1, progressRef.current * 6);
+    const fadeOut = Math.max(0, 1 - (progressRef.current - 1) * 4);
+    const globalOpacity = fadeIn * fadeOut;
 
-      // Fade effect
-      const fadeIn = Math.min(1, progressRef.current * 4);
-      const fadeOut = Math.max(0, 1 - (progressRef.current - 1) * 2.5);
-      const trailFade = Math.max(0, 1 - i / trailLength);
-      const alpha = trailFade * fadeIn * fadeOut;
+    // Update head position and opacity
+    const headPosition = config.start.clone().addScaledVector(config.direction, progressRef.current * config.length);
+    setHeadPos(headPosition);
+    setHeadOpacity(globalOpacity);
 
-      colors[i * 3] = 1;
-      colors[i * 3 + 1] = 1;
-      colors[i * 3 + 2] = 0.9 + 0.1 * trailFade;
+    for (let i = 0; i < segmentCount; i++) {
+      const t = i / (segmentCount - 1);
+      const trailT = progressRef.current - t * 0.6;
 
-      sizes[i] = (0.6 - i * 0.02) * alpha;
+      const pos = config.start.clone().addScaledVector(config.direction, trailT * config.length);
+
+      // Smooth tapering
+      const widthFactor = Math.pow(1 - t, 1.8) * (1 - t * 0.3);
+      const width = config.width * widthFactor;
+
+      const offset = cameraRight.clone().multiplyScalar(width);
+
+      positions[i * 6] = pos.x - offset.x;
+      positions[i * 6 + 1] = pos.y - offset.y;
+      positions[i * 6 + 2] = pos.z - offset.z;
+
+      positions[i * 6 + 3] = pos.x + offset.x;
+      positions[i * 6 + 4] = pos.y + offset.y;
+      positions[i * 6 + 5] = pos.z + offset.z;
+
+      // Smooth alpha falloff
+      const trailAlpha = Math.pow(1 - t, 1.2);
+      const alpha = trailAlpha * globalOpacity;
+
+      alphas[i * 2] = alpha;
+      alphas[i * 2 + 1] = alpha;
     }
 
     posAttr.needsUpdate = true;
-    colorAttr.needsUpdate = true;
-    sizeAttr.needsUpdate = true;
+    alphaAttr.needsUpdate = true;
+    geometry.computeBoundingSphere();
 
-    if (progressRef.current > 1.4) {
+    if (progressRef.current > 1.25) {
       onComplete();
     }
   });
 
   return (
-    <points ref={pointsRef} geometry={geometry}>
-      <pointsMaterial
-        size={0.5}
-        map={starTexture}
-        vertexColors
-        transparent
-        opacity={1}
-        sizeAttenuation
-        blending={THREE.AdditiveBlending}
-        depthWrite={false}
-      />
-    </points>
+    <group>
+      <mesh ref={meshRef} geometry={geometry} material={material} />
+      {/* Bright head glow */}
+      <sprite position={headPos} scale={[0.4 * headOpacity, 0.4 * headOpacity, 1]}>
+        <spriteMaterial
+          map={starTexture}
+          color={new THREE.Color(1, 1, 0.9)}
+          transparent
+          opacity={headOpacity * 1.2}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </sprite>
+    </group>
   );
 }
 
@@ -189,11 +278,11 @@ function ShootingStars() {
 
     const spawnStar = () => {
       setStars(prev => [...prev, nextIdRef.current++]);
-      const nextInterval = 2500 + Math.random() * 4500;
+      const nextInterval = 3000 + Math.random() * 5000;
       timeoutId = setTimeout(spawnStar, nextInterval);
     };
 
-    timeoutId = setTimeout(spawnStar, 1500 + Math.random() * 2000);
+    timeoutId = setTimeout(spawnStar, 1000 + Math.random() * 2000);
 
     return () => clearTimeout(timeoutId);
   }, []);
@@ -205,7 +294,7 @@ function ShootingStars() {
   return (
     <>
       {stars.map(id => (
-        <ShootingStar key={id} onComplete={() => removeStar(id)} />
+        <ShootingStarComplete key={id} onComplete={() => removeStar(id)} />
       ))}
     </>
   );

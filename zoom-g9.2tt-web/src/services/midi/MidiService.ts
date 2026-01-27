@@ -15,6 +15,10 @@ import {
   buildPatchSelectMessage,
   buildWritePatchMessage,
   serializePatch,
+  buildReadResponseMessage,
+  isReadRequest,
+  getRequestedPatchId,
+  isEditExit,
 } from './protocol';
 import type { DeviceIdentity, RawPatchData } from './protocol';
 
@@ -374,6 +378,10 @@ class MidiService {
     this.outputPort = null;
     this.connectedDeviceId = null;
 
+    // Reset edit mode state - IMPORTANT: device state is lost on disconnect
+    this.isInEditMode = false;
+    this.currentPreviewPatchId = null;
+
     // Remove state change handler
     if (this.midiAccess && this.stateChangeHandler) {
       this.midiAccess.removeEventListener('statechange', this.stateChangeHandler);
@@ -550,21 +558,26 @@ class MidiService {
 
   /**
    * Send a parameter change to the device in real-time.
+   * IMPORTANT: Device must be in Edit Mode for this to work!
    * @param moduleKey Module name (amp, comp, etc.)
    * @param paramIndex Parameter index in the params array
    * @param value Parameter value
    */
   sendParameter(moduleKey: string, paramIndex: number, value: number): void {
-    console.log(`[MidiService] sendParameter called: module=${moduleKey} paramIndex=${paramIndex} value=${value}`);
+    console.log(`[MidiService] sendParameter called: module=${moduleKey} paramIndex=${paramIndex} value=${value} isInEditMode=${this.isInEditMode}`);
 
     if (!this.outputPort) {
       console.warn('[MidiService] Cannot sendParameter: outputPort is null');
       return;
     }
 
+    if (!this.isInEditMode) {
+      console.warn('[MidiService] WARNING: Not in Edit Mode - parameter change may be ignored by device');
+    }
+
     try {
       const message = buildParameterMessage(moduleKey, paramIndex, value);
-      console.log('[MidiService] Built message, sending via throttle...');
+      console.log('[MidiService] Sending parameter message:', Array.from(message).map(b => b.toString(16).padStart(2, '0')).join(' '));
       this.sendThrottled(message);
     } catch (error) {
       console.error('[MidiService] Failed to build parameter message:', error);
@@ -573,13 +586,25 @@ class MidiService {
 
   /**
    * Send a module type change to the device in real-time.
+   * IMPORTANT: Device must be in Edit Mode for this to work!
    * @param moduleKey Module name (amp, comp, etc.)
    * @param typeId Effect type ID
    */
   sendModuleType(moduleKey: string, typeId: number): void {
-    console.log(`[MidiService] sendModuleType called: module=${moduleKey} typeId=${typeId}`);
+    console.log(`[MidiService] sendModuleType called: module=${moduleKey} typeId=${typeId} isInEditMode=${this.isInEditMode}`);
+
+    if (!this.outputPort) {
+      console.warn('[MidiService] Cannot sendModuleType: outputPort is null');
+      return;
+    }
+
+    if (!this.isInEditMode) {
+      console.warn('[MidiService] WARNING: Not in Edit Mode - type change may be ignored by device');
+    }
+
     try {
       const message = buildModuleTypeMessage(moduleKey, typeId);
+      console.log('[MidiService] Sending type message:', Array.from(message).map(b => b.toString(16).padStart(2, '0')).join(' '));
       this.sendThrottled(message);
     } catch (error) {
       console.error('[MidiService] Failed to build type message:', error);
@@ -588,13 +613,25 @@ class MidiService {
 
   /**
    * Send a module on/off toggle to the device in real-time.
+   * IMPORTANT: Device must be in Edit Mode for this to work!
    * @param moduleKey Module name (amp, comp, etc.)
    * @param enabled Whether the module should be enabled
    */
   sendModuleToggle(moduleKey: string, enabled: boolean): void {
-    console.log(`[MidiService] sendModuleToggle called: module=${moduleKey} enabled=${enabled}`);
+    console.log(`[MidiService] sendModuleToggle called: module=${moduleKey} enabled=${enabled} isInEditMode=${this.isInEditMode}`);
+
+    if (!this.outputPort) {
+      console.warn('[MidiService] Cannot sendModuleToggle: outputPort is null');
+      return;
+    }
+
+    if (!this.isInEditMode) {
+      console.warn('[MidiService] WARNING: Not in Edit Mode - toggle may be ignored by device');
+    }
+
     try {
       const message = buildModuleToggleMessage(moduleKey, enabled);
+      console.log('[MidiService] Sending toggle message:', Array.from(message).map(b => b.toString(16).padStart(2, '0')).join(' '));
       this.sendThrottled(message);
     } catch (error) {
       console.error('[MidiService] Failed to build toggle message:', error);
@@ -817,6 +854,107 @@ class MidiService {
         `Failed to write patch ${patchId}: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
+  }
+
+  /**
+   * Write all patches to the device using bulk transfer protocol.
+   *
+   * The G9.2tt bulk write uses a "pull" protocol where the pedal controls the transfer:
+   * 1. User must manually put pedal in BulkDumpRx mode
+   * 2. Host sends EDIT_ENTER to trigger the transfer
+   * 3. Pedal requests each patch with READ_REQ (0x11)
+   * 4. Host responds with READ_RESP (0x21) containing nibble-encoded data
+   * 5. Pedal signals completion with EDIT_EXIT (0x1F)
+   *
+   * @param patches Array of all patches to write (must be 100)
+   * @param onProgress Optional callback for progress updates (0-100)
+   * @throws Error if write fails or times out
+   */
+  async writeAllPatches(patches: Patch[], onProgress?: (progress: number) => void): Promise<void> {
+    if (!this.outputPort || !this.inputPort) {
+      throw new Error('Not connected to a MIDI device');
+    }
+
+    if (patches.length !== 100) {
+      throw new Error(`Expected 100 patches, got ${patches.length}`);
+    }
+
+    // Pre-serialize all patches
+    const serializedPatches: Uint8Array[] = patches.map(patch => serializePatch(patch));
+
+    // Store references to ports (already validated as non-null above)
+    const inputPort = this.inputPort!;
+    const outputPort = this.outputPort!;
+
+    return new Promise<void>((resolve, reject) => {
+      let patchesSent = 0;
+      let timeoutId: ReturnType<typeof setTimeout>;
+      const TIMEOUT_MS = 30000; // 30 seconds timeout for bulk transfer
+
+      // Message handler for incoming pedal requests
+      const messageHandler = (event: MIDIMessageEvent) => {
+        if (!event.data) return;
+        const data = new Uint8Array(event.data);
+
+        // Check if pedal is requesting a patch (READ_REQ)
+        if (isReadRequest(data)) {
+          const requestedPatchId = getRequestedPatchId(data);
+          console.log(`[MidiService] Pedal requested patch ${requestedPatchId}`);
+
+          // Get serialized patch data
+          const patchData = serializedPatches[requestedPatchId];
+          if (!patchData) {
+            console.error(`[MidiService] No data for patch ${requestedPatchId}`);
+            return;
+          }
+
+          // Build and send READ_RESP
+          const response = buildReadResponseMessage(requestedPatchId, patchData);
+          outputPort.send(Array.from(response));
+
+          patchesSent++;
+          const progress = Math.round((patchesSent / 100) * 100);
+          onProgress?.(progress);
+
+          // Reset timeout on each successful response
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(() => {
+            cleanup();
+            reject(new Error('Bulk transfer timed out - pedal stopped requesting patches'));
+          }, TIMEOUT_MS);
+
+          return;
+        }
+
+        // Check if pedal signals end of transfer (EDIT_EXIT)
+        if (isEditExit(data)) {
+          console.log(`[MidiService] Pedal sent EDIT_EXIT - bulk transfer complete (${patchesSent} patches sent)`);
+          cleanup();
+          resolve();
+          return;
+        }
+      };
+
+      // Cleanup function
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        inputPort.onmidimessage = null;
+      };
+
+      // Set up message listener
+      inputPort.onmidimessage = messageHandler;
+
+      // Set timeout for initial pedal response
+      timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error('Bulk transfer timed out - make sure the pedal is in BulkDumpRx mode'));
+      }, TIMEOUT_MS);
+
+      // Send EDIT_ENTER to trigger the pedal to start requesting patches
+      console.log('[MidiService] Sending EDIT_ENTER to start bulk transfer');
+      const enterEdit = buildEnterEditMessage();
+      outputPort.send(Array.from(enterEdit));
+    });
   }
 
   // ============================================

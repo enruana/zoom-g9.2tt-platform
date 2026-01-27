@@ -10,6 +10,7 @@ interface ParameterModalProps {
   onChange: (value: number) => void;
   onClose: () => void;
   moduleName?: string;
+  accentColor?: string;
 }
 
 export function ParameterModal({
@@ -18,6 +19,7 @@ export function ParameterModal({
   onChange,
   onClose,
   moduleName,
+  accentColor = '#22c55e',
 }: ParameterModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -89,7 +91,7 @@ export function ParameterModal({
             value={value}
             digits={digitCount}
             size="lg"
-            color="#22c55e"
+            color={accentColor}
           />
         </div>
 
@@ -119,6 +121,7 @@ export function ParameterModal({
             onChange={onChange}
             height={200}
             orientation="vertical"
+            accentColor={accentColor}
           />
         </div>
 

@@ -84,11 +84,11 @@ development_status:
   epic-5-retrospective: optional
 
   # Epic 6: Authentication & Cloud Sync
-  epic-6: backlog
-  6-1-implement-firebase-authentication: backlog
-  6-2-add-auth-ui-components: backlog
-  6-3-implement-firestore-patch-storage: backlog
-  6-4-add-cloud-sync-functionality: backlog
+  epic-6: done
+  6-1-implement-firebase-authentication: done
+  6-2-add-auth-ui-components: done
+  6-3-implement-firestore-patch-storage: done
+  6-4-add-cloud-sync-functionality: done
   epic-6-retrospective: optional
 
   # Epic 7: Visual Experience

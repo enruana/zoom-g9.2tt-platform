@@ -8,6 +8,7 @@ interface KnobProps {
   onClick?: () => void;
   disabled?: boolean;
   size?: 'sm' | 'md' | 'lg';
+  accentColor?: string;
 }
 
 /** Convert value to rotation angle (-135 to 135 degrees) */
@@ -30,6 +31,7 @@ export function Knob({
   onClick,
   disabled = false,
   size = 'md',
+  accentColor = 'rgb(59, 130, 246)',
 }: KnobProps) {
   const angle = useMemo(
     () => valueToAngle(value, parameter.min, parameter.max),
@@ -85,7 +87,7 @@ export function Knob({
             cy="50"
             r="46"
             fill="none"
-            stroke="rgb(59, 130, 246)"
+            stroke={accentColor}
             strokeWidth="4"
             strokeDasharray={`${((value - parameter.min) / (parameter.max - parameter.min || 1)) * 217.8} 290.4`}
             strokeDashoffset="-36.3"
@@ -108,12 +110,14 @@ export function Knob({
         >
           {/* Indicator line */}
           <div
-            className="absolute bg-white rounded-full"
+            className="absolute rounded-full"
             style={{
               width: dims.indicator,
               height: dims.inner / 3,
               left: `calc(50% - ${dims.indicator / 2}px)`,
               top: 4,
+              background: accentColor,
+              boxShadow: `0 0 4px ${accentColor}`,
             }}
           />
         </div>

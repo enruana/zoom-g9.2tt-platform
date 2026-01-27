@@ -1,6 +1,8 @@
-import { createContext, useContext, useReducer, useMemo } from 'react';
+import { createContext, useContext, useReducer, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Patch } from '../types/patch';
+
+const STORAGE_KEY = 'g9tt_patches';
 
 /** Patch context state */
 export interface PatchState {
@@ -67,10 +69,38 @@ type PatchAction =
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'CLEAR_PATCHES' };
 
-// Initial state
+// Load patches from localStorage
+function loadPatchesFromStorage(): Patch[] {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('[PatchContext] Failed to load patches from localStorage:', e);
+  }
+  return [];
+}
+
+// Save patches to localStorage
+function savePatchesToStorage(patches: Patch[]): void {
+  try {
+    if (patches.length > 0) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(patches));
+    }
+  } catch (e) {
+    console.warn('[PatchContext] Failed to save patches to localStorage:', e);
+  }
+}
+
+// Initial state - load from localStorage if available
+const storedPatches = loadPatchesFromStorage();
 const initialState: PatchState = {
-  patches: [],
-  selectedPatchId: null,
+  patches: storedPatches,
+  selectedPatchId: storedPatches.length > 0 ? 0 : null,
   isLoading: false,
   loadingProgress: 0,
   error: null,
@@ -296,6 +326,13 @@ interface PatchProviderProps {
 // Provider component
 export function PatchProvider({ children }: PatchProviderProps) {
   const [state, dispatch] = useReducer(patchReducer, initialState);
+
+  // Persist patches to localStorage whenever they change
+  useEffect(() => {
+    if (state.patches.length > 0) {
+      savePatchesToStorage(state.patches);
+    }
+  }, [state.patches]);
 
   // Derive currentPatch from state
   const currentPatch = useMemo(() => {

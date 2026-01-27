@@ -8,8 +8,10 @@ export interface HistoryEntry {
   patchId: number;
   /** Module that was changed */
   module: ModuleName;
-  /** Parameter index that was changed */
+  /** Parameter index that was changed (in the editable params array) */
   paramIndex: number;
+  /** MIDI parameter ID for real-time control */
+  midiParamId: number;
   /** Value before the change */
   oldValue: number;
   /** Value after the change */

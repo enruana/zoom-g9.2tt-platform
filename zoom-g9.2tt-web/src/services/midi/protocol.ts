@@ -487,26 +487,19 @@ export const MODULE_EFFECT_IDS: Record<string, number> = {
  * Build a parameter change message for real-time control.
  * Format: F0 52 00 42 31 [EFFECT_ID] [PARAM_ID] [VALUE] 00 F7
  * @param moduleKey Module name (amp, comp, etc.)
- * @param paramIndex Parameter index in the params array (0, 1, 2, ...)
+ * @param paramId MIDI parameter ID (0x00=On/Off, 0x01=Type, 0x02+=parameters)
  * @param value Parameter value (0-127)
  * @returns SysEx message bytes
  */
 export function buildParameterMessage(
   moduleKey: string,
-  paramIndex: number,
+  paramId: number,
   value: number
 ): Uint8Array {
   const effectId = MODULE_EFFECT_IDS[moduleKey];
   if (effectId === undefined) {
     throw new Error(`Unknown module: ${moduleKey}`);
   }
-
-  // Parameter index 0 maps to MIDI param 0x02, index 1 to 0x03, etc.
-  // This matches the G9.2tt protocol where:
-  //   0x00 = On/Off
-  //   0x01 = Type
-  //   0x02+ = Effect-specific parameters
-  const paramId = PARAM_OFFSET + paramIndex;
 
   // Clamp value to 0-127 (MIDI data byte range)
   // Note: Some parameters (DLY time, MOD depth) can exceed 127 but
@@ -523,7 +516,7 @@ export function buildParameterMessage(
     SYSEX_END,
   ]);
 
-  console.log(`[Protocol] buildParameterMessage: module=${moduleKey}(0x${effectId.toString(16)}) param=${paramIndex}(0x${paramId.toString(16)}) value=${value}(clamped=${clampedValue})`);
+  console.log(`[Protocol] buildParameterMessage: module=${moduleKey}(0x${effectId.toString(16)}) paramId=0x${paramId.toString(16)} value=${value}(clamped=${clampedValue})`);
 
   return message;
 }
@@ -741,6 +734,163 @@ function encodePatchName(name: string): Uint8Array {
 }
 
 import type { Patch } from '../../types/patch';
+
+// ============================================
+// Nibble Encoding for Bulk Write (READ_RESP format)
+// ============================================
+
+/**
+ * Encode 128 bytes to 256 nibbles for READ_RESP format.
+ * Each byte is split into high nibble and low nibble.
+ * @param data 128 bytes of raw patch data
+ * @returns 256 nibbles
+ */
+export function encodeNibbles(data: Uint8Array): Uint8Array {
+  if (data.length !== 128) {
+    throw new Error(`Expected 128 bytes, got ${data.length}`);
+  }
+
+  const nibbles = new Uint8Array(256);
+
+  for (let i = 0; i < 128; i++) {
+    const byte = data[i] ?? 0;
+    nibbles[i * 2] = (byte >> 4) & 0x0F;      // High nibble
+    nibbles[i * 2 + 1] = byte & 0x0F;          // Low nibble
+  }
+
+  return nibbles;
+}
+
+/**
+ * Calculate CRC-32 checksum for patch data.
+ * Uses polynomial 0xEDB88320 with initial value 0xFFFFFFFF.
+ * @param data 128 bytes of raw patch data
+ * @returns 32-bit CRC value
+ */
+function calculateCrc32(data: Uint8Array): number {
+  let crc = 0xFFFFFFFF;
+
+  for (let i = 0; i < data.length; i++) {
+    const byte = data[i] ?? 0;
+    crc ^= byte;
+
+    for (let bit = 0; bit < 8; bit++) {
+      if (crc & 1) {
+        crc = (crc >>> 1) ^ 0xEDB88320;
+      } else {
+        crc = crc >>> 1;
+      }
+    }
+  }
+
+  return crc >>> 0; // Ensure unsigned
+}
+
+/**
+ * Encode CRC-32 to 5 bytes of 7-bit values.
+ * Splits 32-bit CRC into 5 groups of 7 bits (last has 4 bits).
+ * @param crc 32-bit CRC value
+ * @returns 5 bytes
+ */
+function encodeCrc7bit(crc: number): Uint8Array {
+  const result = new Uint8Array(5);
+  result[0] = (crc & 0x7F);           // bits 0-6
+  result[1] = ((crc >> 7) & 0x7F);    // bits 7-13
+  result[2] = ((crc >> 14) & 0x7F);   // bits 14-20
+  result[3] = ((crc >> 21) & 0x7F);   // bits 21-27
+  result[4] = ((crc >> 28) & 0x0F);   // bits 28-31 (only 4 bits)
+  return result;
+}
+
+/**
+ * Calculate 5-byte checksum for patch data.
+ * @param data 128 bytes of raw patch data
+ * @returns 5 bytes checksum
+ */
+export function calculateChecksum(data: Uint8Array): Uint8Array {
+  const crc = calculateCrc32(data);
+  return encodeCrc7bit(crc);
+}
+
+/**
+ * Build a READ_RESP (0x21) message for bulk write.
+ * This is the format used when the pedal requests patch data during bulk transfer.
+ *
+ * Format: F0 52 00 42 21 [PATCH] [256 NIBBLES] [5 CHECKSUM] F7
+ * Total: 268 bytes
+ *
+ * @param patchId Patch number (0-99)
+ * @param patchData 128 bytes of raw patch data
+ * @returns 268-byte SysEx message
+ */
+export function buildReadResponseMessage(patchId: number, patchData: Uint8Array): Uint8Array {
+  if (patchId < 0 || patchId > 99) {
+    throw new Error(`Invalid patch ID: ${patchId}. Must be 0-99.`);
+  }
+
+  if (patchData.length !== 128) {
+    throw new Error(`Expected 128 bytes of patch data, got ${patchData.length}`);
+  }
+
+  const nibbles = encodeNibbles(patchData);
+  const checksum = calculateChecksum(patchData);
+
+  const result = new Uint8Array(268);
+
+  // Header: F0 52 00 42 21 [PATCH]
+  result[0] = SYSEX_START;
+  result[1] = ZOOM_MANUFACTURER_ID;
+  result[2] = G9TT_DEVICE_ID;
+  result[3] = G9TT_MODEL_ID;
+  result[4] = CMD_READ_PATCH_RESPONSE;
+  result[5] = patchId;
+
+  // 256 nibbles (bytes 6-261)
+  result.set(nibbles, 6);
+
+  // 5-byte checksum (bytes 262-266)
+  result.set(checksum, 262);
+
+  // End
+  result[267] = SYSEX_END;
+
+  return result;
+}
+
+/**
+ * Check if a SysEx message is a READ_REQ (pedal requesting patch data).
+ * Format: F0 52 00 42 11 [PATCH] F7
+ */
+export function isReadRequest(data: Uint8Array): boolean {
+  return data.length === 7 &&
+         data[0] === SYSEX_START &&
+         data[1] === ZOOM_MANUFACTURER_ID &&
+         data[2] === G9TT_DEVICE_ID &&
+         data[3] === G9TT_MODEL_ID &&
+         data[4] === CMD_READ_PATCH_REQUEST &&
+         data[6] === SYSEX_END;
+}
+
+/**
+ * Get the patch ID from a READ_REQ message.
+ */
+export function getRequestedPatchId(data: Uint8Array): number {
+  return data[5] ?? 0;
+}
+
+/**
+ * Check if a SysEx message is an EDIT_EXIT (pedal signaling end of bulk transfer).
+ * Format: F0 52 00 42 1F F7
+ */
+export function isEditExit(data: Uint8Array): boolean {
+  return data.length === 6 &&
+         data[0] === SYSEX_START &&
+         data[1] === ZOOM_MANUFACTURER_ID &&
+         data[2] === G9TT_DEVICE_ID &&
+         data[3] === G9TT_MODEL_ID &&
+         data[4] === CMD_EXIT_EDIT &&
+         data[5] === SYSEX_END;
+}
 
 /**
  * Serialize a Patch object to 128 bytes of raw patch data.

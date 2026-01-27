@@ -13,7 +13,6 @@ interface PedalboardProps {
 export function Pedalboard({ patch, onModuleSelect, onModuleToggle, selectedModule = null }: PedalboardProps) {
   const [localSelectedModule, setLocalSelectedModule] = useState<ModuleName | null>(null);
 
-  // Use external selection if provided, otherwise use local state
   const currentSelected = selectedModule ?? localSelectedModule;
 
   const handleModuleSelect = useCallback((moduleKey: ModuleName) => {
@@ -26,44 +25,77 @@ export function Pedalboard({ patch, onModuleSelect, onModuleToggle, selectedModu
 
   return (
     <div className="w-full">
-      {/* Signal Flow Label */}
-      <div className="flex items-center gap-2 mb-4 text-xs text-gray-500">
+      {/* Signal Flow - Input */}
+      <div className="flex items-center gap-2 mb-3 text-xs text-neutral-500">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-gray-700 border-2 border-gray-600" />
-          <span className="font-medium">INPUT</span>
+          <div className="w-2.5 h-2.5 rounded-full bg-neutral-700 border border-neutral-600" />
+          <span className="font-medium text-[10px] uppercase tracking-wider">Input</span>
         </div>
-        <div className="flex-1 h-px bg-gradient-to-r from-gray-600 via-gray-500 to-transparent" />
+        <div className="flex-1 h-px bg-gradient-to-r from-neutral-700 to-transparent" />
       </div>
 
       {/* Pedalboard Surface */}
       <div
-        className="p-4 rounded-xl"
+        className="p-3 sm:p-4 rounded-xl overflow-hidden"
         style={{
-          background: 'linear-gradient(180deg, #1f2937 0%, #111827 100%)',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.5)',
+          background: 'linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.5)',
+          border: '1px solid rgba(255,255,255,0.05)',
         }}
       >
-        {/* Module Grid - Responsive layout */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {/* Mobile: Flex wrap layout */}
+        <div className="flex lg:hidden flex-wrap justify-center gap-2">
           {SIGNAL_CHAIN_ORDER.map((moduleKey) => (
-            <ModuleMini
-              key={moduleKey}
-              moduleKey={moduleKey}
-              module={patch.modules[moduleKey]}
-              isSelected={currentSelected === moduleKey}
-              onSelect={() => handleModuleSelect(moduleKey)}
-              onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
-            />
+            <div key={moduleKey} className="w-[calc(33.333%-8px)] min-w-[80px] max-w-[100px]">
+              <ModuleMini
+                moduleKey={moduleKey}
+                module={patch.modules[moduleKey]}
+                isSelected={currentSelected === moduleKey}
+                onSelect={() => handleModuleSelect(moduleKey)}
+                onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
+                compact={true}
+              />
+            </div>
           ))}
+        </div>
+
+        {/* Desktop: Grid layout - 2 rows of 5 */}
+        <div className="hidden lg:block">
+          {/* First row: COMP, WAH, ZNR, AMP, CAB */}
+          <div className="grid grid-cols-5 gap-3 mb-3">
+            {SIGNAL_CHAIN_ORDER.slice(0, 5).map((moduleKey) => (
+              <ModuleMini
+                key={moduleKey}
+                moduleKey={moduleKey}
+                module={patch.modules[moduleKey]}
+                isSelected={currentSelected === moduleKey}
+                onSelect={() => handleModuleSelect(moduleKey)}
+                onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
+              />
+            ))}
+          </div>
+          {/* Second row: EQ, MOD, DLY, REV, EXT */}
+          <div className="grid grid-cols-5 gap-3">
+            {SIGNAL_CHAIN_ORDER.slice(5, 10).map((moduleKey) => (
+              <ModuleMini
+                key={moduleKey}
+                moduleKey={moduleKey}
+                module={patch.modules[moduleKey]}
+                isSelected={currentSelected === moduleKey}
+                onSelect={() => handleModuleSelect(moduleKey)}
+                onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Signal Flow Label - End */}
-      <div className="flex items-center gap-2 mt-4 text-xs text-gray-500">
-        <div className="flex-1 h-px bg-gradient-to-l from-gray-600 via-gray-500 to-transparent" />
+      {/* Signal Flow - Output */}
+      <div className="flex items-center gap-2 mt-3 text-xs text-neutral-500">
+        <div className="flex-1 h-px bg-gradient-to-l from-neutral-700 to-transparent" />
         <div className="flex items-center gap-2">
-          <span className="font-medium">OUTPUT</span>
-          <div className="w-3 h-3 rounded-full bg-gray-700 border-2 border-gray-600" />
+          <span className="font-medium text-[10px] uppercase tracking-wider">Output</span>
+          <div className="w-2.5 h-2.5 rounded-full bg-neutral-700 border border-neutral-600" />
         </div>
       </div>
     </div>

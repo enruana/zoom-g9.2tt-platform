@@ -11,6 +11,8 @@ interface SliderProps {
   disabled?: boolean;
   /** Orientation of the slider */
   orientation?: 'vertical' | 'horizontal';
+  /** Accent color for the fill and thumb */
+  accentColor?: string;
 }
 
 export function Slider({
@@ -21,6 +23,7 @@ export function Slider({
   height = 200,
   disabled = false,
   orientation = 'vertical',
+  accentColor = '#3b82f6',
 }: SliderProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -147,27 +150,37 @@ export function Slider({
       {/* Fill */}
       <div
         className={`
-          absolute rounded-full bg-gradient-to-t from-blue-600 to-blue-400
+          absolute rounded-full
           ${isVertical ? 'bottom-0 left-0 right-0' : 'top-0 bottom-0 left-0'}
         `}
-        style={isVertical
-          ? { height: `${normalizedValue * 100}%` }
-          : { width: `${normalizedValue * 100}%` }
-        }
+        style={{
+          background: `linear-gradient(${isVertical ? 'to top' : 'to right'}, ${accentColor}cc, ${accentColor})`,
+          boxShadow: `0 0 10px ${accentColor}66`,
+          ...(isVertical
+            ? { height: `${normalizedValue * 100}%` }
+            : { width: `${normalizedValue * 100}%` }
+          ),
+        }}
       />
 
       {/* Thumb */}
       <div
         className={`
           absolute w-8 h-8 rounded-full bg-white shadow-lg
-          border-4 border-blue-500 transition-transform
+          transition-transform
           ${isDragging ? 'scale-110' : ''}
           ${isVertical ? 'left-1/2 -translate-x-1/2' : 'top-1/2 -translate-y-1/2'}
         `}
-        style={isVertical
-          ? { bottom: `calc(${normalizedValue * 100}% - 16px)` }
-          : { left: `calc(${normalizedValue * 100}% - 16px)` }
-        }
+        style={{
+          borderWidth: 4,
+          borderStyle: 'solid',
+          borderColor: accentColor,
+          boxShadow: `0 2px 8px rgba(0,0,0,0.3), 0 0 8px ${accentColor}44`,
+          ...(isVertical
+            ? { bottom: `calc(${normalizedValue * 100}% - 16px)` }
+            : { left: `calc(${normalizedValue * 100}% - 16px)` }
+          ),
+        }}
       />
 
       {/* Tick marks */}

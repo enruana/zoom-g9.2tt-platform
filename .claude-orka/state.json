@@ -8,7 +8,7 @@
       "tmuxSessionId": "orka-efea708a-bba0-43c3-8c9b-f2549b4f06a8",
       "status": "active",
       "createdAt": "2026-01-23T16:55:18.806Z",
-      "lastActivity": "2026-01-26T00:21:30.051Z",
+      "lastActivity": "2026-01-27T17:48:41.685Z",
       "main": {
         "claudeSessionId": "64c87491-5da7-4b50-aad4-67890e0e10a4",
         "tmuxPaneId": "%2",
@@ -20,14 +20,37 @@
           "name": "vm-windows-on-mac",
           "parentId": "main",
           "claudeSessionId": "fef64c22-453f-4070-87bc-ccad442d859c",
-          "tmuxPaneId": "%3",
-          "status": "active",
+          "status": "closed",
           "createdAt": "2026-01-23T22:28:06.153Z"
+        },
+        {
+          "id": "1876caf0-15fc-43d4-9ab3-01650d0b25e7",
+          "name": "ux-details",
+          "parentId": "main",
+          "claudeSessionId": "582642c4-724d-4591-99fb-0938447a0978",
+          "status": "closed",
+          "createdAt": "2026-01-27T10:26:13.505Z"
+        },
+        {
+          "id": "75b54515-e5dd-4423-8582-fe3f16baaed8",
+          "name": "custom-styles-on-modules",
+          "parentId": "main",
+          "claudeSessionId": "a79a925b-e7fb-47f0-a2ac-2784be40373e",
+          "status": "closed",
+          "createdAt": "2026-01-27T12:07:04.849Z"
+        },
+        {
+          "id": "513fd203-b82e-415e-a711-f29770c5c560",
+          "name": "fixing-styles",
+          "parentId": "main",
+          "claudeSessionId": "57e1d517-ce37-4cf0-a371-4c69a272012d",
+          "status": "closed",
+          "createdAt": "2026-01-27T17:43:16.980Z"
         }
       ],
       "ttydPort": 4445,
       "ttydPid": 4913
     }
   ],
-  "lastUpdated": "2026-01-26T00:21:54.120Z"
+  "lastUpdated": "2026-01-27T17:48:41.687Z"
 }
