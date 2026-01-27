@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDevice, getStoredDeviceInfo, clearStoredDeviceInfo } from '../contexts/DeviceContext';
 import { usePatch } from '../contexts/PatchContext';
 import { useHistory } from '../contexts/HistoryContext';
@@ -45,6 +45,8 @@ function saveOnlineModePreference(enabled: boolean): void {
 
 export function Editor() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const midiDeviceIdFromUrl = searchParams.get('midi');
   const { state: authState } = useAuth();
   const { state: deviceState, actions: deviceActions } = useDevice();
   const { state: patchState, currentPatch, actions: patchActions } = usePatch();
@@ -101,49 +103,60 @@ export function Editor() {
     }
   }, [authState.isLoading, authState.user, deviceState.status, patchState.patches.length, navigate]);
 
-  // Auto-reconnect to MIDI device if we have patches and a stored device
+  // Auto-reconnect to MIDI device using URL param or stored device info
   const [isReconnecting, setIsReconnecting] = useState(false);
+  const reconnectAttemptedRef = useRef(false);
 
   useEffect(() => {
     // Only attempt reconnection if:
     // - Device is disconnected (not demo, not connecting, not connected)
-    // - We have patches loaded (from localStorage)
     // - We're not already reconnecting
     // - User is authenticated
+    // - We haven't already attempted (to avoid infinite loops)
     if (deviceState.status !== 'disconnected') return;
-    if (patchState.patches.length === 0) return;
     if (isReconnecting) return;
     if (!authState.user) return;
+    if (reconnectAttemptedRef.current) return;
 
+    // Need either URL param or stored device info
     const storedDevice = getStoredDeviceInfo();
-    if (!storedDevice) return;
+    if (!midiDeviceIdFromUrl && !storedDevice) return;
 
     // Attempt auto-reconnection
     async function attemptReconnect() {
-      // Re-check storedDevice inside async function for TypeScript
-      const device = getStoredDeviceInfo();
-      if (!device) return;
-
+      reconnectAttemptedRef.current = true;
       setIsReconnecting(true);
-      console.log('[Editor] Attempting auto-reconnect to:', device.deviceName);
+      console.log('[Editor] Attempting auto-reconnect, URL param:', midiDeviceIdFromUrl);
 
       try {
         // Request MIDI access
         await midiService.requestAccess();
-
-        // IMPORTANT: Device IDs are not persistent across browser sessions.
-        // We need to find the device by NAME instead of by ID.
         const availableDevices = midiService.getDevices();
-        const matchingDevice = availableDevices.find(d => d.name === device.deviceName);
 
-        if (!matchingDevice) {
-          console.warn('[Editor] Device not found by name:', device.deviceName);
-          throw new Error(`Device "${device.deviceName}" not found`);
+        let matchingDevice = null;
+
+        // First, try to find by URL param ID
+        if (midiDeviceIdFromUrl) {
+          matchingDevice = availableDevices.find(d => d.id === midiDeviceIdFromUrl);
+          if (matchingDevice) {
+            console.log('[Editor] Found device by URL param ID:', matchingDevice.id);
+          }
         }
 
-        console.log('[Editor] Found device by name, new ID:', matchingDevice.id);
+        // If not found by ID, try by stored device name
+        if (!matchingDevice && storedDevice) {
+          matchingDevice = availableDevices.find(d => d.name === storedDevice.deviceName);
+          if (matchingDevice) {
+            console.log('[Editor] Found device by stored name:', matchingDevice.name);
+          }
+        }
 
-        // Connect using the current session's device ID
+        if (!matchingDevice) {
+          console.warn('[Editor] Device not found');
+          throw new Error('MIDI device not found');
+        }
+
+        // Connect using the device ID
         await midiService.connect(matchingDevice.id);
 
         // Verify it's a G9.2tt
@@ -152,7 +165,7 @@ export function Editor() {
           throw new Error('Device is not a Zoom G9.2tt');
         }
 
-        // Success! Update device context with the NEW device ID
+        // Success! Update device context
         deviceActions.setConnected(
           matchingDevice.id,
           matchingDevice.name,
@@ -182,14 +195,14 @@ export function Editor() {
         // Clear stored device so we don't keep trying
         clearStoredDeviceInfo();
         // Show info toast (not error - user can still work offline)
-        toast.show('Working offline - connect pedal to sync');
+        toast.info('Working offline - connect pedal to sync');
       } finally {
         setIsReconnecting(false);
       }
     }
 
     attemptReconnect();
-  }, [deviceState.status, patchState.patches.length, isReconnecting, authState.user, deviceActions]);
+  }, [deviceState.status, isReconnecting, authState.user, deviceActions, midiDeviceIdFromUrl, patchState.selectedPatchId]);
 
   useEffect(() => {
     if (deviceState.status !== 'connected') return;
@@ -689,27 +702,38 @@ export function Editor() {
         <div className="flex md:hidden items-center justify-between">
           <div className="flex items-center gap-2">
             <img src="/zoomlogo.png" alt="ZOOM" className="h-4 opacity-80" />
-            {/* Status indicator */}
-            {isDemo && (
-              <span className="px-1.5 py-0.5 bg-purple-500/20 text-purple-400 text-[10px] font-medium rounded">
-                DEMO
-              </span>
-            )}
-            {isConnected && (
-              <span className="px-1.5 py-0.5 bg-green-500/20 text-green-400 text-[10px] font-medium rounded">
-                LIVE
-              </span>
-            )}
-            {!isDemo && !isConnected && patchState.patches.length > 0 && (
-              <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded flex items-center gap-1 ${
-                isReconnecting ? 'bg-blue-500/20 text-blue-400' : 'bg-neutral-500/20 text-neutral-400'
+            {/* MIDI Status LED */}
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-800/50 rounded-lg">
+              <div
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  isConnected
+                    ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]'
+                    : isReconnecting
+                      ? 'bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.6)] animate-pulse'
+                      : isDemo
+                        ? 'bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.6)]'
+                        : 'bg-neutral-600'
+                }`}
+              />
+              <span className={`text-[10px] font-medium ${
+                isConnected
+                  ? 'text-green-400'
+                  : isReconnecting
+                    ? 'text-orange-400'
+                    : isDemo
+                      ? 'text-purple-400'
+                      : 'text-neutral-500'
               }`}>
-                {isReconnecting && (
-                  <div className="w-2 h-2 border border-blue-400 border-t-transparent rounded-full animate-spin" />
-                )}
-                {isReconnecting ? 'RECONNECTING' : 'OFFLINE'}
+                {isConnected
+                  ? 'MIDI'
+                  : isReconnecting
+                    ? 'CONNECTING'
+                    : isDemo
+                      ? 'DEMO'
+                      : 'OFFLINE'}
               </span>
-            )}
+            </div>
+            {/* Unsaved indicator */}
             {hasUnsavedChanges && (
               <span className="w-2 h-2 rounded-full bg-amber-500" title="Unsaved changes" />
             )}
@@ -765,28 +789,46 @@ export function Editor() {
 
             {/* Status Badges */}
             <div className="flex items-center gap-2">
-              {isDemo && (
-                <span className="px-2 py-0.5 bg-purple-500/20 text-purple-400 text-xs font-medium rounded border border-purple-500/30">
-                  DEMO
+              {/* MIDI Connection LED */}
+              <div className="flex items-center gap-2 px-2.5 py-1 bg-neutral-800/50 rounded-lg border border-neutral-700/50">
+                <div
+                  className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                    isConnected
+                      ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                      : isReconnecting
+                        ? 'bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse'
+                        : isDemo
+                          ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.6)]'
+                          : 'bg-neutral-600'
+                  }`}
+                />
+                <span className={`text-xs font-medium ${
+                  isConnected
+                    ? 'text-green-400'
+                    : isReconnecting
+                      ? 'text-orange-400'
+                      : isDemo
+                        ? 'text-purple-400'
+                        : 'text-neutral-500'
+                }`}>
+                  {isConnected
+                    ? 'MIDI'
+                    : isReconnecting
+                      ? 'CONNECTING'
+                      : isDemo
+                        ? 'DEMO'
+                        : 'OFFLINE'}
                 </span>
-              )}
-              {isConnected && (
-                <span className="px-2 py-0.5 bg-green-500/20 text-green-400 text-xs font-medium rounded border border-green-500/30">
+              </div>
+
+              {/* Device name badge (when connected) */}
+              {isConnected && deviceState.deviceName && (
+                <span className="px-2 py-0.5 bg-neutral-800/50 text-neutral-300 text-xs font-medium rounded border border-neutral-700/50">
                   {deviceState.deviceName}
                 </span>
               )}
-              {!isDemo && !isConnected && patchState.patches.length > 0 && (
-                <span className={`px-2 py-0.5 text-xs font-medium rounded border flex items-center gap-1.5 ${
-                  isReconnecting
-                    ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
-                    : 'bg-neutral-500/20 text-neutral-400 border-neutral-500/30'
-                }`}>
-                  {isReconnecting && (
-                    <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-                  )}
-                  {isReconnecting ? 'RECONNECTING' : 'OFFLINE'}
-                </span>
-              )}
+
+              {/* Unsaved changes indicator */}
               {hasUnsavedChanges && (
                 <span className="px-2 py-0.5 bg-amber-500/20 text-amber-400 text-xs font-medium rounded border border-amber-500/30">
                   Unsaved
