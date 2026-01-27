@@ -14,6 +14,8 @@ from .constants import (
     CMD_READ_RESPONSE,
     CMD_WRITE_PATCH,
     CMD_PARAM_CHANGE,
+    CMD_ENABLE_LIVE,
+    CMD_DISABLE_LIVE,
     PATCH_SIZE_NIBBLE,
 )
 from .encoding import decode_nibbles, encode_nibbles, encode_7bit, decode_7bit
@@ -80,6 +82,33 @@ def build_exit_edit() -> bytes:
         6-byte SysEx message
     """
     return _build_sysex(CMD_EXIT_EDIT)
+
+
+def build_enable_live() -> bytes:
+    """
+    Build enable live/real-time mode message.
+
+    Command 0x50: Enable real-time parameter changes ("Online" in G9ED).
+    After sending this, parameter changes (0x31) will affect audio in real-time.
+    Discovered by capturing G9ED traffic (2025-01-27).
+
+    Returns:
+        6-byte SysEx message: F0 52 00 42 50 F7
+    """
+    return _build_sysex(CMD_ENABLE_LIVE)
+
+
+def build_disable_live() -> bytes:
+    """
+    Build disable live/real-time mode message.
+
+    Command 0x51: Disable real-time mode ("Offline" in G9ED).
+    Discovered by capturing G9ED traffic (2025-01-27).
+
+    Returns:
+        6-byte SysEx message: F0 52 00 42 51 F7
+    """
+    return _build_sysex(CMD_DISABLE_LIVE)
 
 
 def build_write_data(patch_data: bytes) -> bytes:

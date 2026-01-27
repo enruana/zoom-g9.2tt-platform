@@ -3,13 +3,14 @@
 Example: Real-time parameter control
 
 This example demonstrates how to:
-- Control parameters in real-time
+- Enable live mode for real-time parameter changes
 - Sweep through parameter values
 - Toggle effects on/off
 
-NOTE: The device must be in Edit Mode for parameter changes (0x31) to work.
-The library automatically enters edit mode when set_parameter() is called.
-When using the context manager, exit_edit_mode() is called automatically on exit.
+The library uses the protocol discovered from G9ED:
+1. Send Enable Live (0x50) - "Online"
+2. Send Param Change (0x31) for real-time updates
+3. Send Disable Live (0x51) - "Offline" when done
 """
 
 import sys
@@ -57,11 +58,27 @@ def demo_delay_mix(device):
     print("Done!")
 
 
+def demo_comp_toggle(device):
+    """Demo: Toggle compressor on/off."""
+    print("\n=== Compressor Toggle Demo ===")
+    print("Toggling COMP every second (Ctrl+C to stop)...")
+
+    try:
+        state = False
+        while True:
+            state = not state
+            device.set_parameter("comp", "on", 1 if state else 0)
+            print(f"  COMP: {'ON' if state else 'OFF'}")
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print("\nStopped")
+
+
 def interactive_mode(device):
     """Interactive parameter control mode."""
     print("\n=== Interactive Mode ===")
     print("Enter commands in format: effect param value")
-    print("Examples: amp gain 80, delay mix 30, reverb on 1")
+    print("Examples: amp gain 80, delay mix 30, comp on 1")
     print("Type 'quit' to exit")
 
     while True:
@@ -98,6 +115,11 @@ def main():
         with G9Device() as device:
             print(f"Connected to: {device.port_name}")
 
+            # Enable live mode explicitly (optional, set_parameter does this automatically)
+            print("Enabling live mode...")
+            device.enable_live_mode()
+            print("Live mode enabled!")
+
             if len(sys.argv) > 1:
                 # Run specific demo
                 demo = sys.argv[1].lower()
@@ -105,17 +127,22 @@ def main():
                     demo_amp_gain(device)
                 elif demo == "delay":
                     demo_delay_mix(device)
+                elif demo == "comp":
+                    demo_comp_toggle(device)
                 elif demo == "interactive":
                     interactive_mode(device)
                 else:
                     print(f"Unknown demo: {demo}")
-                    print("Available: amp, delay, interactive")
+                    print("Available: amp, delay, comp, interactive")
             else:
-                # Run all demos
+                # Show help
+                print("\nAvailable demos:")
+                print("  python realtime_control.py amp         - Sweep amp gain")
+                print("  python realtime_control.py delay       - Sweep delay mix")
+                print("  python realtime_control.py comp        - Toggle compressor")
+                print("  python realtime_control.py interactive - Interactive mode")
+                print("\nRunning amp demo by default...")
                 demo_amp_gain(device)
-                time.sleep(1)
-                demo_delay_mix(device)
-                print("\nFor interactive mode, run: python realtime_control.py interactive")
 
     except G9DeviceError as e:
         print(f"\nError: {e}")

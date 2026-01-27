@@ -67,6 +67,7 @@ export function Editor() {
   const [isSyncingToPedal, setIsSyncingToPedal] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const [showBulkSendDialog, setShowBulkSendDialog] = useState(false);
+  const lastProgressUpdateRef = useRef(0);
   const pendingNavigationRef = useRef<string | null>(null);
 
   const isDemo = deviceState.status === 'demo';
@@ -600,10 +601,17 @@ export function Editor() {
     setIsSyncingFromPedal(true);
     setSyncProgress(0);
     setShowSyncMenu(false);
+    lastProgressUpdateRef.current = 0;
 
     try {
       const allPatches = await midiService.readAllPatches((progress) => {
-        setSyncProgress(progress);
+        // Throttle progress updates to reduce re-renders (update every 250ms or at 100%)
+        const now = Date.now();
+        const timeSinceLastUpdate = now - lastProgressUpdateRef.current;
+        if (progress === 100 || timeSinceLastUpdate >= 250) {
+          lastProgressUpdateRef.current = now;
+          setSyncProgress(progress);
+        }
       });
 
       if (allPatches && allPatches.length > 0) {
@@ -638,10 +646,17 @@ export function Editor() {
 
     setIsSyncingToPedal(true);
     setSyncProgress(0);
+    lastProgressUpdateRef.current = 0;
 
     try {
       await midiService.writeAllPatches(patchState.patches, (progress) => {
-        setSyncProgress(progress);
+        // Throttle progress updates to reduce re-renders (update every 250ms or at 100%)
+        const now = Date.now();
+        const timeSinceLastUpdate = now - lastProgressUpdateRef.current;
+        if (progress === 100 || timeSinceLastUpdate >= 250) {
+          lastProgressUpdateRef.current = now;
+          setSyncProgress(progress);
+        }
       });
 
       setShowBulkSendDialog(false);
@@ -744,7 +759,7 @@ export function Editor() {
         {/* Desktop Header */}
         <div className="hidden md:flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img src="/zoomlogo.png" alt="ZOOM" className="h-5 opacity-80" />
+            <img src="/zoomlogo.png" alt="ZOOM" className="h-8 opacity-80" />
             <div className="w-px h-6 bg-neutral-700" />
             <h1 className="text-lg font-semibold text-neutral-200">G9.2tt Editor</h1>
 
@@ -963,9 +978,9 @@ export function Editor() {
         {/* Patch Editor Area */}
         <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-gradient-to-b from-neutral-900 to-black">
           {currentPatch ? (
-            <div className="p-4 md:p-6 max-w-5xl mx-auto">
+            <div className="p-4 md:p-6 lg:p-8 w-full">
               {/* Patch Header */}
-              <div className="mb-4 md:mb-8">
+              <div className="mb-4 md:mb-6">
                 {/* Mobile: Patch selector button */}
                 <button
                   onClick={() => setShowMobilePatches(true)}
@@ -1015,7 +1030,7 @@ export function Editor() {
               </div>
 
               {/* Pedalboard */}
-              <div className="mb-4 md:mb-8">
+              <div className="mb-4 md:mb-6">
                 <Pedalboard
                   patch={currentPatch}
                   selectedModule={selectedModule}

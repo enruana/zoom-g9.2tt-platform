@@ -1,80 +1,129 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, type ReactNode } from 'react';
 
 export type ToastType = 'error' | 'warning' | 'success' | 'info';
 
 interface ToastProps {
+  id: number;
   message: string;
   type?: ToastType;
   duration?: number;
   onClose: () => void;
 }
 
-const typeStyles: Record<ToastType, { bg: string; border: string; icon: string }> = {
+const typeConfig: Record<ToastType, {
+  gradient: string;
+  glow: string;
+  iconBg: string;
+  icon: ReactNode;
+}> = {
   error: {
-    bg: 'bg-red-900/90',
-    border: 'border-red-500',
-    icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+    gradient: 'from-red-500/20 to-red-900/20',
+    glow: 'shadow-red-500/20',
+    iconBg: 'bg-red-500',
+    icon: (
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    ),
   },
   warning: {
-    bg: 'bg-yellow-900/90',
-    border: 'border-yellow-500',
-    icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+    gradient: 'from-yellow-500/20 to-yellow-900/20',
+    glow: 'shadow-yellow-500/20',
+    iconBg: 'bg-yellow-500',
+    icon: (
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01" />
+      </svg>
+    ),
   },
   success: {
-    bg: 'bg-green-900/90',
-    border: 'border-green-500',
-    icon: 'M5 13l4 4L19 7',
+    gradient: 'from-green-500/20 to-green-900/20',
+    glow: 'shadow-green-500/20',
+    iconBg: 'bg-green-500',
+    icon: (
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+      </svg>
+    ),
   },
   info: {
-    bg: 'bg-blue-900/90',
-    border: 'border-blue-500',
-    icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+    gradient: 'from-blue-500/20 to-blue-900/20',
+    glow: 'shadow-blue-500/20',
+    iconBg: 'bg-blue-500',
+    icon: (
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
   },
 };
 
-export function Toast({ message, type = 'info', duration = 5000, onClose }: ToastProps) {
-  const [isVisible, setIsVisible] = useState(true);
-  const styles = typeStyles[type];
+function ToastItem({ message, type = 'info', duration = 4000, onClose }: ToastProps) {
+  const [state, setState] = useState<'entering' | 'visible' | 'exiting'>('entering');
+  const config = typeConfig[type];
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-      setTimeout(onClose, 300); // Wait for fade animation
+    // Enter animation
+    const enterTimer = setTimeout(() => setState('visible'), 10);
+
+    // Auto dismiss
+    const dismissTimer = setTimeout(() => {
+      setState('exiting');
     }, duration);
 
-    return () => clearTimeout(timer);
-  }, [duration, onClose]);
+    return () => {
+      clearTimeout(enterTimer);
+      clearTimeout(dismissTimer);
+    };
+  }, [duration]);
+
+  useEffect(() => {
+    if (state === 'exiting') {
+      const timer = setTimeout(onClose, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [state, onClose]);
+
+  const handleClose = useCallback(() => {
+    setState('exiting');
+  }, []);
 
   return (
     <div
-      className={`fixed bottom-4 right-4 max-w-md p-4 rounded-lg border ${styles.bg} ${styles.border} text-white shadow-lg transition-all duration-300 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-      }`}
+      className={`
+        flex items-center gap-3 px-4 py-3 rounded-xl
+        bg-gradient-to-r ${config.gradient}
+        backdrop-blur-xl bg-neutral-900/80
+        border border-neutral-700/50
+        shadow-lg ${config.glow}
+        transition-all duration-200 ease-out
+        ${state === 'entering' ? 'opacity-0 translate-x-4' : ''}
+        ${state === 'visible' ? 'opacity-100 translate-x-0' : ''}
+        ${state === 'exiting' ? 'opacity-0 translate-x-4 scale-95' : ''}
+      `}
     >
-      <div className="flex items-start gap-3">
-        <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={styles.icon} />
-        </svg>
-        <div className="flex-1">
-          <p className="text-sm">{message}</p>
-        </div>
-        <button
-          onClick={() => {
-            setIsVisible(false);
-            setTimeout(onClose, 300);
-          }}
-          className="text-gray-400 hover:text-white transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+      {/* Icon */}
+      <div className={`${config.iconBg} w-6 h-6 rounded-lg flex items-center justify-center shrink-0`}>
+        {config.icon}
       </div>
+
+      {/* Message */}
+      <p className="text-sm text-neutral-200 flex-1 pr-2">{message}</p>
+
+      {/* Close button */}
+      <button
+        onClick={handleClose}
+        className="text-neutral-500 hover:text-neutral-300 transition-colors p-1 -mr-1 rounded-lg hover:bg-neutral-800/50"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   );
 }
 
-// Toast container for managing multiple toasts
+// Toast state management
 interface ToastItem {
   id: number;
   message: string;
@@ -93,6 +142,10 @@ function notifyListeners() {
 export const toast = {
   show(message: string, type: ToastType = 'info') {
     const id = ++toastId;
+    // Limit to 5 toasts max
+    if (currentToasts.length >= 5) {
+      currentToasts = currentToasts.slice(1);
+    }
     currentToasts = [...currentToasts, { id, message, type }];
     notifyListeners();
     return id;
@@ -129,11 +182,14 @@ export function ToastContainer() {
     return toast.subscribe(setToasts);
   }, []);
 
+  if (toasts.length === 0) return null;
+
   return (
-    <div className="fixed bottom-4 right-4 space-y-2 z-50">
-      {toasts.map((t, index) => (
-        <div key={t.id} style={{ transform: `translateY(-${index * 4}px)` }}>
-          <Toast
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      {toasts.map((t) => (
+        <div key={t.id} className="pointer-events-auto">
+          <ToastItem
+            id={t.id}
             message={t.message}
             type={t.type}
             onClose={() => toast.dismiss(t.id)}
@@ -143,3 +199,6 @@ export function ToastContainer() {
     </div>
   );
 }
+
+// Re-export for backwards compatibility
+export { ToastItem as Toast };

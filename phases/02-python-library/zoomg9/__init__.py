@@ -88,6 +88,8 @@ from .protocol import (
     build_param_change,
     build_enter_edit,
     build_exit_edit,
+    build_enable_live,
+    build_disable_live,
     parse_read_response,
 )
 
@@ -137,5 +139,7 @@ __all__ = [
     "build_param_change",
     "build_enter_edit",
     "build_exit_edit",
+    "build_enable_live",
+    "build_disable_live",
     "parse_read_response",
 ]

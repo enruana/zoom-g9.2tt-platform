@@ -74,75 +74,135 @@ export function ModulePanel({
         aria-label={`${info.fullName} settings`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800 shrink-0">
-          <div className="flex items-center gap-4">
-            {/* Module indicator (LED) */}
-            <div
-              className="w-4 h-4 rounded-full"
-              style={{
-                background: module.enabled
-                  ? `radial-gradient(circle at 30% 30%, ${colors.led} 0%, ${colors.led}99 100%)`
-                  : 'radial-gradient(circle at 30% 30%, #444 0%, #222 100%)',
-                boxShadow: module.enabled
-                  ? `0 0 12px ${colors.led}, 0 0 20px ${colors.led}44`
-                  : 'inset 0 1px 2px rgba(0,0,0,0.5)',
-              }}
-            />
-
-            {/* Module Name */}
-            <h3 className="text-xl font-bold" style={{ color: colors.text }}>
-              {info.fullName}
-            </h3>
-
-            {/* ON/OFF Toggle */}
-            <ToggleButton
-              isOn={module.enabled}
-              onClick={onToggleEnabled}
-              accentColor={colors.body}
-              size="md"
-            />
-          </div>
-
-          {/* Right side: Type & Close */}
-          <div className="flex items-center gap-3">
-            {/* Effect Type Selector */}
-            {canSelectType && (
-              <Button
-                onClick={onTypeSelect}
-                variant="secondary"
+        <div className="px-4 md:px-6 py-3 md:py-4 border-b border-neutral-800 shrink-0">
+          {/* Mobile: Two rows */}
+          <div className="flex md:hidden flex-col gap-3">
+            {/* Row 1: Name + Close */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {/* LED */}
+                <div
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{
+                    background: module.enabled
+                      ? `radial-gradient(circle at 30% 30%, ${colors.led} 0%, ${colors.led}99 100%)`
+                      : 'radial-gradient(circle at 30% 30%, #444 0%, #222 100%)',
+                    boxShadow: module.enabled
+                      ? `0 0 8px ${colors.led}, 0 0 12px ${colors.led}44`
+                      : 'inset 0 1px 2px rgba(0,0,0,0.5)',
+                  }}
+                />
+                {/* Module Name */}
+                <h3 className="text-lg font-bold truncate" style={{ color: colors.text }}>
+                  {info.fullName}
+                </h3>
+              </div>
+              {/* Close Button */}
+              <IconButton
+                onClick={onClose}
+                variant="ghost"
                 size="sm"
-                icon={
-                  <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                aria-label="Close panel"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </IconButton>
+            </div>
+            {/* Row 2: Toggle + Type selector */}
+            <div className="flex items-center justify-between gap-2">
+              <ToggleButton
+                isOn={module.enabled}
+                onClick={onToggleEnabled}
+                accentColor={colors.body}
+                size="sm"
+              />
+              {canSelectType && (
+                <button
+                  onClick={onTypeSelect}
+                  className="flex-1 flex items-center justify-between gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 rounded-lg transition-colors"
+                >
+                  <span className="text-neutral-400 text-sm">Type:</span>
+                  <span className="font-medium text-white text-sm truncate">{typeName}</span>
+                  <svg className="w-4 h-4 text-neutral-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                }
-                iconPosition="right"
-              >
-                <span className="text-neutral-500">Type:</span>
-                <span className="font-medium text-white ml-1">{typeName}</span>
-              </Button>
-            )}
+                </button>
+              )}
+            </div>
+          </div>
 
-            {/* Close Button */}
-            <IconButton
-              onClick={onClose}
-              variant="ghost"
-              size="md"
-              aria-label="Close panel"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </IconButton>
+          {/* Desktop: Single row */}
+          <div className="hidden md:flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              {/* Module indicator (LED) */}
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{
+                  background: module.enabled
+                    ? `radial-gradient(circle at 30% 30%, ${colors.led} 0%, ${colors.led}99 100%)`
+                    : 'radial-gradient(circle at 30% 30%, #444 0%, #222 100%)',
+                  boxShadow: module.enabled
+                    ? `0 0 12px ${colors.led}, 0 0 20px ${colors.led}44`
+                    : 'inset 0 1px 2px rgba(0,0,0,0.5)',
+                }}
+              />
+
+              {/* Module Name */}
+              <h3 className="text-xl font-bold" style={{ color: colors.text }}>
+                {info.fullName}
+              </h3>
+
+              {/* ON/OFF Toggle */}
+              <ToggleButton
+                isOn={module.enabled}
+                onClick={onToggleEnabled}
+                accentColor={colors.body}
+                size="md"
+              />
+            </div>
+
+            {/* Right side: Type & Close */}
+            <div className="flex items-center gap-3">
+              {/* Effect Type Selector */}
+              {canSelectType && (
+                <Button
+                  onClick={onTypeSelect}
+                  variant="secondary"
+                  size="sm"
+                  icon={
+                    <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  }
+                  iconPosition="right"
+                >
+                  <span className="text-neutral-500">Type:</span>
+                  <span className="font-medium text-white ml-1">{typeName}</span>
+                </Button>
+              )}
+
+              {/* Close Button */}
+              <IconButton
+                onClick={onClose}
+                variant="ghost"
+                size="md"
+                aria-label="Close panel"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </IconButton>
+            </div>
           </div>
         </div>
 
         {/* Parameters - Scrollable */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden px-6 py-8">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 md:px-6 py-6 md:py-8">
           {parameters.length > 0 ? (
             isEQ ? (
               /* EQ: Vertical sliders in a row */
-              <div className="flex justify-center items-end gap-4">
+              <div className="flex justify-center items-end gap-2 md:gap-4 flex-wrap">
                 {parameters.map((param, index) => {
                   const paramValue = module.params[index] ?? param.defaultValue ?? param.min;
                   return (
@@ -159,7 +219,7 @@ export function ModulePanel({
               </div>
             ) : (
               /* Other modules: Knobs */
-              <div className="flex flex-wrap justify-center gap-6">
+              <div className="flex flex-wrap justify-center gap-4 md:gap-6">
                 {parameters.map((param, index) => {
                   const paramValue = module.params[index] ?? param.defaultValue ?? param.min;
                   return (
@@ -180,8 +240,8 @@ export function ModulePanel({
               </div>
             )
           ) : (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-neutral-600 text-lg">
+            <div className="flex items-center justify-center py-8 md:py-12">
+              <p className="text-neutral-600 text-base md:text-lg text-center">
                 No editable parameters for this module
               </p>
             </div>
@@ -189,9 +249,10 @@ export function ModulePanel({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-neutral-800 text-center shrink-0">
-          <p className="text-xs text-neutral-600">
-            Click a knob to edit &bull; Press <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded text-neutral-400">ESC</kbd> to close
+        <div className="px-4 md:px-6 py-2 md:py-3 border-t border-neutral-800 text-center shrink-0">
+          <p className="text-[10px] md:text-xs text-neutral-600">
+            <span className="hidden md:inline">Click a knob to edit &bull; Press <kbd className="px-1.5 py-0.5 bg-neutral-800 rounded text-neutral-400">ESC</kbd> to close</span>
+            <span className="md:hidden">Tap a knob to edit</span>
           </p>
         </div>
       </div>

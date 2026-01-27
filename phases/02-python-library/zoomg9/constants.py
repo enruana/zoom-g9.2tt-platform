@@ -10,12 +10,14 @@ G9TT_MODEL_ID = 0x42
 DEVICE_ID = 0x00
 
 # SysEx Commands
-CMD_READ_PATCH = 0x11
-CMD_ENTER_EDIT = 0x12
-CMD_EXIT_EDIT = 0x1F
-CMD_READ_RESPONSE = 0x21
-CMD_WRITE_PATCH = 0x28
-CMD_PARAM_CHANGE = 0x31
+CMD_READ_PATCH = 0x11      # Request patch data from device
+CMD_ENTER_EDIT = 0x12      # Enter editing mode (for bulk write)
+CMD_EXIT_EDIT = 0x1F       # Exit editing mode
+CMD_READ_RESPONSE = 0x21   # Patch data response (nibble-encoded)
+CMD_WRITE_PATCH = 0x28     # Write patch data (7-bit encoded, 153 bytes)
+CMD_PARAM_CHANGE = 0x31    # Real-time parameter change
+CMD_ENABLE_LIVE = 0x50     # Enable live/real-time mode - "Online" (discovered 2025-01-27)
+CMD_DISABLE_LIVE = 0x51    # Disable live/real-time mode - "Offline" (discovered 2025-01-27)
 
 # Patch Constants
 PATCH_COUNT = 100

@@ -1,7 +1,7 @@
 # Zoom G9.2tt MIDI Protocol Specification
 
-**Version:** 1.0
-**Date:** 2026-01-25
+**Version:** 1.2
+**Date:** 2025-01-27
 **Status:** Complete (Reverse Engineered)
 
 ---
@@ -94,12 +94,14 @@ F7
 | CMD | Name | Direction | Length | Description |
 |-----|------|-----------|--------|-------------|
 | 0x11 | Read Patch Request | → Device | 7 | Request patch data |
-| 0x12 | Enter Edit Mode | → Device | 6 | Enter editing mode |
+| 0x12 | Enter Edit Mode | → Device | 6 | Enter editing mode (for bulk write) |
 | 0x1F | Exit Edit Mode | → Device | 6 | Exit editing mode |
 | 0x21 | Read Patch Response | ← Device | 268 | Patch data (nibble-encoded) |
 | 0x28 | Write/Preview Patch | → Device | 153 | Send patch data (7-bit encoded) |
 | 0x31 | Parameter Change | → Device | 10 | Real-time parameter control |
 | 0x31 | Patch Select | → Device | 10 | Select/confirm patch |
+| 0x50 | Enable Live Mode | → Device | 6 | "Online" - Enable real-time preview (NEW) |
+| 0x51 | Disable Live Mode | → Device | 6 | "Offline" - Disable real-time mode (NEW) |
 
 ### 0x11 - Read Patch Request
 
@@ -116,11 +118,13 @@ F0 52 00 42 11 [PATCH] F7
 
 ### 0x12 - Enter Edit Mode
 
-Enter editing mode. **Required before:**
-- Write operations (0x28)
-- Real-time parameter changes (0x31)
+Enter editing mode for **bulk write operations**.
 
-Without this command, the device will silently ignore parameter change commands.
+**Required before:**
+- Bulk write operations (when pedal is in BULK RX mode)
+
+**NOT required for:**
+- Real-time parameter changes (use 0x50 Enable Live Mode instead)
 
 ```
 F0 52 00 42 12 F7
@@ -194,6 +198,44 @@ F0 52 00 42 31 [PATCH] 02 [MODE] 00 F7
 ```
 
 **Length:** 10 bytes
+
+### 0x50 - Enable Live Mode (NEW - Discovered 2025-01-27)
+
+Enable real-time parameter preview mode ("Online" in G9ED).
+After sending this command, parameter changes (0x31) will immediately
+affect the audio output.
+
+```
+F0 52 00 42 50 F7
+```
+
+**Length:** 6 bytes
+**Effect:** Device enters live preview mode
+
+### 0x51 - Disable Live Mode (NEW - Discovered 2025-01-27)
+
+Disable real-time parameter preview mode ("Offline" in G9ED).
+
+```
+F0 52 00 42 51 F7
+```
+
+**Length:** 6 bytes
+**Effect:** Device exits live preview mode
+
+### Live Mode Usage
+
+To enable real-time parameter control (like G9ED's "Online" mode):
+
+```
+1. Send Enable Live:  F0 52 00 42 50 F7
+2. Wait ~100ms
+3. Now parameter changes (0x31) will work in real-time
+4. When done, send Disable Live: F0 52 00 42 51 F7
+```
+
+**Note:** The old method (0x12 Enter Edit Mode) is for bulk write operations,
+not for real-time preview. Use 0x50 for live parameter changes.
 
 ---
 
@@ -490,12 +532,13 @@ Host                           G9.2tt
 
 ### Real-Time Parameter Change
 
-**IMPORTANT:** The device must be in Edit Mode (0x12) before parameter change commands (0x31) will be accepted. This was discovered on 2026-01-27 through bidirectional MIDI capture.
+**IMPORTANT:** The device must be in Live Mode (0x50 "Online") before parameter change
+commands (0x31) will be accepted. This was discovered on 2025-01-27 by capturing G9ED traffic.
 
 ```
 Host                           G9.2tt
   │                               │
-  │─── F0 52 00 42 12 F7 ────────▶│  ENTER EDIT MODE (required!)
+  │─── F0 52 00 42 50 F7 ────────▶│  ENABLE LIVE MODE (0x50 "Online")
   │                               │
   │─── F0 52 00 42 31 05 02 50 ──▶│  Set AMP Gain to 80
   │       (immediate effect)      │
@@ -506,16 +549,17 @@ Host                           G9.2tt
   │                               │
   │        ... more changes ...   │
   │                               │
-  │─── F0 52 00 42 1F F7 ────────▶│  EXIT EDIT MODE (when done)
+  │─── F0 52 00 42 51 F7 ────────▶│  DISABLE LIVE MODE (0x51 "Offline")
   │                               │
 ```
 
 **Key points:**
-- Must send EDIT_ENTER (0x12) before any parameter changes
+- Must send ENABLE_LIVE (0x50) before any parameter changes
 - Parameter changes take effect immediately (audible on pedal)
-- Multiple parameters can be changed while in edit mode
-- Send EXIT_EDIT (0x1F) when finished to return to normal operation
-- Without EDIT_ENTER, the 0x31 commands are silently ignored
+- Multiple parameters can be changed while in live mode
+- Send DISABLE_LIVE (0x51) when finished to return to normal operation
+- Without ENABLE_LIVE, the 0x31 commands are silently ignored
+- Note: 0x12 (Enter Edit Mode) is for bulk write operations, NOT for real-time control
 
 ### Bulk Write (Send All to G9.2tt)
 
@@ -605,28 +649,28 @@ def read_patch(port_name, patch_num):
 ### Set Parameter (Python)
 
 ```python
-def enter_edit_mode(port):
-    """Enter edit mode - REQUIRED before parameter changes"""
-    port.send(mido.Message('sysex', data=[0x52, 0x00, 0x42, 0x12]))
+def enable_live_mode(port):
+    """Enable live mode (0x50 "Online") - REQUIRED before parameter changes"""
+    port.send(mido.Message('sysex', data=[0x52, 0x00, 0x42, 0x50]))
     time.sleep(0.1)
 
-def exit_edit_mode(port):
-    """Exit edit mode"""
-    port.send(mido.Message('sysex', data=[0x52, 0x00, 0x42, 0x1F]))
+def disable_live_mode(port):
+    """Disable live mode (0x51 "Offline")"""
+    port.send(mido.Message('sysex', data=[0x52, 0x00, 0x42, 0x51]))
 
 def set_parameter(port, effect_id, param_id, value):
-    """Set effect parameter in real-time (must be in edit mode!)"""
+    """Set effect parameter in real-time (must be in live mode!)"""
     # F0 52 00 42 31 [effect] [param] [value] 00 F7
     data = [0x52, 0x00, 0x42, 0x31, effect_id, param_id, value, 0x00]
     port.send(mido.Message('sysex', data=data))
 
 # Example: Set AMP Gain to 70
 with mido.open_output('USB MIDI') as out:
-    enter_edit_mode(out)          # REQUIRED!
+    enable_live_mode(out)         # REQUIRED! (0x50)
     set_parameter(out, 0x05, 0x02, 70)  # AMP Gain = 70
     set_parameter(out, 0x01, 0x00, 1)   # COMP On
     # ... more changes ...
-    exit_edit_mode(out)           # Clean up when done
+    disable_live_mode(out)        # Clean up when done (0x51)
 ```
 
 ### Write Patch (Python)
@@ -713,8 +757,9 @@ AutoWah, AutoResonance, Booster, Tremolo, Phaser, FixedPhaser, RingModulator, Sl
 
 | Version | Date | Changes |
 |---------|------|---------|
-| 1.1 | 2026-01-27 | CRITICAL: Documented that EDIT_ENTER (0x12) is required before parameter changes (0x31) work |
-| 1.0 | 2026-01-25 | Initial release (reverse engineered) |
+| 1.2 | 2025-01-27 | CRITICAL FIX: Real-time control uses ENABLE_LIVE (0x50) and DISABLE_LIVE (0x51), NOT 0x12. Discovered by strace capture of G9ED. |
+| 1.1 | 2025-01-27 | Added initial live mode documentation (later corrected in 1.2) |
+| 1.0 | 2025-01-25 | Initial release (reverse engineered) |
 
 ---
 

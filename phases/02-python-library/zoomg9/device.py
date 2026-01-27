@@ -36,6 +36,8 @@ from .protocol import (
     build_patch_select,
     build_read_response,
     build_identity_request,
+    build_enable_live,
+    build_disable_live,
     parse_read_response,
     parse_identity_response,
 )
@@ -85,6 +87,7 @@ class G9Device:
         self._outport = None
         self._connected = False
         self._in_edit_mode = False
+        self._in_live_mode = False
 
     @property
     def connected(self) -> bool:
@@ -159,6 +162,12 @@ class G9Device:
 
     def disconnect(self):
         """Disconnect from the G9.2tt."""
+        if self._in_live_mode:
+            try:
+                self.disable_live_mode()
+            except Exception:
+                pass
+
         if self._in_edit_mode:
             try:
                 self.exit_edit_mode()
@@ -219,6 +228,33 @@ class G9Device:
         self._send_sysex(build_exit_edit())
         time.sleep(0.1)
         self._in_edit_mode = False
+
+    def enable_live_mode(self):
+        """
+        Enable live/real-time mode for parameter changes.
+
+        Sends command 0x50 ("Online" in G9ED).
+        After this, parameter changes (0x31) will affect the sound in real-time.
+        """
+        if self._in_live_mode:
+            return
+
+        self._send_sysex(build_enable_live())
+        time.sleep(0.1)
+        self._in_live_mode = True
+
+    def disable_live_mode(self):
+        """
+        Disable live/real-time mode.
+
+        Sends command 0x51 ("Offline" in G9ED).
+        """
+        if not self._in_live_mode:
+            return
+
+        self._send_sysex(build_disable_live())
+        time.sleep(0.1)
+        self._in_live_mode = False
 
     def identity(self) -> dict:
         """
@@ -306,8 +342,8 @@ class G9Device:
         """
         Set an effect parameter in real-time.
 
-        NOTE: The device must be in edit mode for this to work.
-        This method automatically enters edit mode if not already in it.
+        NOTE: The device must be in live mode for real-time changes to work.
+        This method automatically enables live mode if not already enabled.
 
         Args:
             effect: Effect name (amp, delay, reverb, etc.)
@@ -317,9 +353,9 @@ class G9Device:
         Raises:
             ValueError: If effect/param not found or value out of range
         """
-        # Enter edit mode if not already (required for 0x31 commands to work)
-        if not self._in_edit_mode:
-            self.enter_edit_mode()
+        # Enable live mode if not already (required for 0x31 commands to work)
+        if not self._in_live_mode:
+            self.enable_live_mode()
         # Map effect name to ID
         effect_map = {
             "top": 0x00,

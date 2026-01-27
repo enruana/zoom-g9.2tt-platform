@@ -21,6 +21,11 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 disabled:opacity-50 disabled:cursor-not-allowed';
 
+// Spinner component defined outside to avoid re-creation on each render
+const LoadingSpinner = () => (
+  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+);
+
 export function Button({
   variant = 'secondary',
   size = 'md',
@@ -76,10 +81,6 @@ export function Button({
   };
 
   const variantStyles = getVariantStyles();
-
-  const LoadingSpinner = () => (
-    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-  );
 
   return (
     <button

@@ -36,7 +36,7 @@ export function Pedalboard({ patch, onModuleSelect, onModuleToggle, selectedModu
 
       {/* Pedalboard Surface */}
       <div
-        className="p-3 sm:p-4 rounded-xl overflow-hidden"
+        className="p-3 sm:p-4 lg:p-6 rounded-xl overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.5)',
@@ -59,10 +59,10 @@ export function Pedalboard({ patch, onModuleSelect, onModuleToggle, selectedModu
           ))}
         </div>
 
-        {/* Desktop: Grid layout - 2 rows of 5 */}
+        {/* Desktop: Grid layout - 2 rows of 5, full width */}
         <div className="hidden lg:block">
           {/* First row: COMP, WAH, ZNR, AMP, CAB */}
-          <div className="grid grid-cols-5 gap-3 mb-3">
+          <div className="grid grid-cols-5 gap-4 xl:gap-6 mb-4 xl:mb-6">
             {SIGNAL_CHAIN_ORDER.slice(0, 5).map((moduleKey) => (
               <ModuleMini
                 key={moduleKey}
@@ -75,7 +75,7 @@ export function Pedalboard({ patch, onModuleSelect, onModuleToggle, selectedModu
             ))}
           </div>
           {/* Second row: EQ, MOD, DLY, REV, EXT */}
-          <div className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-5 gap-4 xl:gap-6">
             {SIGNAL_CHAIN_ORDER.slice(5, 10).map((moduleKey) => (
               <ModuleMini
                 key={moduleKey}

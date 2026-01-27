@@ -14,21 +14,24 @@ export function EQSliderLarge({ parameter, value, onClick, disabled = false, acc
   const centerValue = 16;
   const maxValue = 31;
 
+  // Clamp value to valid range
+  const clampedValue = Math.max(0, Math.min(maxValue, value));
+
   // Calculate fill percentage (0-100) from bottom
   const fillPercent = useMemo(() => {
-    return (value / maxValue) * 100;
-  }, [value]);
+    return (clampedValue / maxValue) * 100;
+  }, [clampedValue]);
 
   // Calculate if we're boosting (above center) or cutting (below center)
-  const isBoost = value > centerValue;
-  const isCut = value < centerValue;
+  const isBoost = clampedValue > centerValue;
+  const isCut = clampedValue < centerValue;
 
   // Format display value as dB
   const displayValue = useMemo(() => {
-    const db = value - centerValue;
+    const db = clampedValue - centerValue;
     if (db === 0) return '0 dB';
     return db > 0 ? `+${db} dB` : `${db} dB`;
-  }, [value]);
+  }, [clampedValue]);
 
   return (
     <button
