@@ -22,10 +22,12 @@ export const G9TT_MODEL_ID = 0x42;   // Model identifier
 // G9.2tt Commands
 export const CMD_READ_PATCH_REQUEST = 0x11;
 export const CMD_READ_PATCH_RESPONSE = 0x21;
-export const CMD_ENTER_EDIT = 0x12;
+export const CMD_ENTER_EDIT = 0x12;       // For bulk write only, NOT for live mode
 export const CMD_EXIT_EDIT = 0x1F;
 export const CMD_WRITE_PATCH = 0x28;
 export const CMD_PARAMETER_CHANGE = 0x31;
+export const CMD_ENABLE_LIVE = 0x50;      // Enable real-time mode ("Online" in G9ED)
+export const CMD_DISABLE_LIVE = 0x51;     // Disable real-time mode ("Offline" in G9ED)
 
 // Parameter IDs
 export const PARAM_ON_OFF = 0x00;
@@ -603,6 +605,31 @@ export function buildExitEditMessage(): Uint8Array {
   return new Uint8Array([
     ...G9TT_HEADER,
     CMD_EXIT_EDIT,
+    SYSEX_END,
+  ]);
+}
+
+/**
+ * Build enable live mode message ("Online" in G9ED).
+ * Format: F0 52 00 42 50 F7
+ * Required before real-time parameter changes (0x31) will work.
+ */
+export function buildEnableLiveMessage(): Uint8Array {
+  return new Uint8Array([
+    ...G9TT_HEADER,
+    CMD_ENABLE_LIVE,
+    SYSEX_END,
+  ]);
+}
+
+/**
+ * Build disable live mode message ("Offline" in G9ED).
+ * Format: F0 52 00 42 51 F7
+ */
+export function buildDisableLiveMessage(): Uint8Array {
+  return new Uint8Array([
+    ...G9TT_HEADER,
+    CMD_DISABLE_LIVE,
     SYSEX_END,
   ]);
 }

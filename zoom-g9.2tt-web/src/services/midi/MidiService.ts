@@ -12,6 +12,8 @@ import {
   buildModuleToggleMessage,
   buildEnterEditMessage,
   buildExitEditMessage,
+  buildEnableLiveMessage,
+  buildDisableLiveMessage,
   buildPatchSelectMessage,
   buildWritePatchMessage,
   serializePatch,
@@ -378,8 +380,9 @@ class MidiService {
     this.outputPort = null;
     this.connectedDeviceId = null;
 
-    // Reset edit mode state - IMPORTANT: device state is lost on disconnect
+    // Reset mode states - IMPORTANT: device state is lost on disconnect
     this.isInEditMode = false;
+    this.isInLiveMode = false;
     this.currentPreviewPatchId = null;
 
     // Remove state change handler
@@ -402,8 +405,9 @@ class MidiService {
       this.stateChangeHandler = null;
     }
 
-    // Reset edit mode state
+    // Reset mode states
     this.isInEditMode = false;
+    this.isInLiveMode = false;
     this.currentPreviewPatchId = null;
 
     // Clear throttle state
@@ -558,21 +562,24 @@ class MidiService {
 
   /**
    * Send a parameter change to the device in real-time.
-   * IMPORTANT: Device must be in Edit Mode for this to work!
+   * IMPORTANT: Device must be in Live Mode (0x50) for this to work!
+   * This method auto-enables live mode if not already enabled.
    * @param moduleKey Module name (amp, comp, etc.)
    * @param paramIndex Parameter index in the params array
    * @param value Parameter value
    */
   sendParameter(moduleKey: string, paramIndex: number, value: number): void {
-    console.log(`[MidiService] sendParameter called: module=${moduleKey} paramIndex=${paramIndex} value=${value} isInEditMode=${this.isInEditMode}`);
+    console.log(`[MidiService] sendParameter called: module=${moduleKey} paramIndex=${paramIndex} value=${value} isInLiveMode=${this.isInLiveMode}`);
 
     if (!this.outputPort) {
       console.warn('[MidiService] Cannot sendParameter: outputPort is null');
       return;
     }
 
-    if (!this.isInEditMode) {
-      console.warn('[MidiService] WARNING: Not in Edit Mode - parameter change may be ignored by device');
+    // Auto-enable live mode if not already enabled
+    if (!this.isInLiveMode) {
+      console.log('[MidiService] Auto-enabling live mode for parameter change');
+      this.enableLiveMode();
     }
 
     try {
@@ -586,20 +593,23 @@ class MidiService {
 
   /**
    * Send a module type change to the device in real-time.
-   * IMPORTANT: Device must be in Edit Mode for this to work!
+   * IMPORTANT: Device must be in Live Mode (0x50) for this to work!
+   * This method auto-enables live mode if not already enabled.
    * @param moduleKey Module name (amp, comp, etc.)
    * @param typeId Effect type ID
    */
   sendModuleType(moduleKey: string, typeId: number): void {
-    console.log(`[MidiService] sendModuleType called: module=${moduleKey} typeId=${typeId} isInEditMode=${this.isInEditMode}`);
+    console.log(`[MidiService] sendModuleType called: module=${moduleKey} typeId=${typeId} isInLiveMode=${this.isInLiveMode}`);
 
     if (!this.outputPort) {
       console.warn('[MidiService] Cannot sendModuleType: outputPort is null');
       return;
     }
 
-    if (!this.isInEditMode) {
-      console.warn('[MidiService] WARNING: Not in Edit Mode - type change may be ignored by device');
+    // Auto-enable live mode if not already enabled
+    if (!this.isInLiveMode) {
+      console.log('[MidiService] Auto-enabling live mode for type change');
+      this.enableLiveMode();
     }
 
     try {
@@ -613,20 +623,23 @@ class MidiService {
 
   /**
    * Send a module on/off toggle to the device in real-time.
-   * IMPORTANT: Device must be in Edit Mode for this to work!
+   * IMPORTANT: Device must be in Live Mode (0x50) for this to work!
+   * This method auto-enables live mode if not already enabled.
    * @param moduleKey Module name (amp, comp, etc.)
    * @param enabled Whether the module should be enabled
    */
   sendModuleToggle(moduleKey: string, enabled: boolean): void {
-    console.log(`[MidiService] sendModuleToggle called: module=${moduleKey} enabled=${enabled} isInEditMode=${this.isInEditMode}`);
+    console.log(`[MidiService] sendModuleToggle called: module=${moduleKey} enabled=${enabled} isInLiveMode=${this.isInLiveMode}`);
 
     if (!this.outputPort) {
       console.warn('[MidiService] Cannot sendModuleToggle: outputPort is null');
       return;
     }
 
-    if (!this.isInEditMode) {
-      console.warn('[MidiService] WARNING: Not in Edit Mode - toggle may be ignored by device');
+    // Auto-enable live mode if not already enabled
+    if (!this.isInLiveMode) {
+      console.log('[MidiService] Auto-enabling live mode for toggle');
+      this.enableLiveMode();
     }
 
     try {
@@ -639,15 +652,71 @@ class MidiService {
   }
 
   // ============================================
-  // Online/Preview Mode
+  // Live Mode (Real-Time Parameter Control)
   // ============================================
 
-  private isInEditMode: boolean = false;
+  private isInLiveMode: boolean = false;
+  private isInEditMode: boolean = false;  // For bulk write only, NOT for live preview
   private currentPreviewPatchId: number | null = null;
 
   /**
+   * Enable live mode for real-time parameter changes ("Online" in G9ED).
+   * Sends: F0 52 00 42 50 F7
+   * After this, parameter changes (0x31) will affect the sound in real-time.
+   */
+  async enableLiveMode(): Promise<void> {
+    if (!this.outputPort) {
+      throw new Error('Not connected to a MIDI device');
+    }
+
+    if (this.isInLiveMode) {
+      console.log('[MIDI] Already in live mode');
+      return;
+    }
+
+    const enableLive = buildEnableLiveMessage();
+    console.log('[MIDI] Sending ENABLE_LIVE (0x50):', Array.from(enableLive).map(b => b.toString(16).padStart(2, '0')).join(' '));
+    this.outputPort.send(Array.from(enableLive));
+    this.isInLiveMode = true;
+
+    // Small delay for device to process
+    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log('[MIDI] Live mode enabled (Online)');
+  }
+
+  /**
+   * Disable live mode ("Offline" in G9ED).
+   * Sends: F0 52 00 42 51 F7
+   */
+  async disableLiveMode(): Promise<void> {
+    if (!this.outputPort) {
+      console.log('[MIDI] Cannot disable live mode: not connected');
+      return;
+    }
+
+    if (!this.isInLiveMode) {
+      console.log('[MIDI] Not in live mode, nothing to disable');
+      return;
+    }
+
+    const disableLive = buildDisableLiveMessage();
+    console.log('[MIDI] Sending DISABLE_LIVE (0x51):', Array.from(disableLive).map(b => b.toString(16).padStart(2, '0')).join(' '));
+    this.outputPort.send(Array.from(disableLive));
+    this.isInLiveMode = false;
+
+    // Small delay for device to process
+    await new Promise(resolve => setTimeout(resolve, 100));
+    console.log('[MIDI] Live mode disabled (Offline)');
+  }
+
+  // ============================================
+  // Edit Mode (Bulk Write Operations Only)
+  // ============================================
+
+  /**
    * Enter edit mode on the device.
-   * Required for online/preview mode and write operations.
+   * NOTE: This is for BULK WRITE operations only, NOT for live preview!
+   * For real-time parameter changes, use enableLiveMode() instead.
    * Sends: F0 52 00 42 12 F7
    */
   async enterEditMode(): Promise<void> {
@@ -657,22 +726,21 @@ class MidiService {
 
     if (this.isInEditMode) {
       console.log('[MIDI] Already in edit mode');
-      return; // Already in edit mode
+      return;
     }
 
     const enterEdit = buildEnterEditMessage();
-    console.log('[MIDI] Sending ENTER_EDIT:', Array.from(enterEdit).map(b => b.toString(16).padStart(2, '0')).join(' '));
+    console.log('[MIDI] Sending ENTER_EDIT (0x12):', Array.from(enterEdit).map(b => b.toString(16).padStart(2, '0')).join(' '));
     this.outputPort.send(Array.from(enterEdit));
     this.isInEditMode = true;
 
     // Small delay for device to process
     await new Promise(resolve => setTimeout(resolve, 100));
-    console.log('[MIDI] Edit mode entered');
+    console.log('[MIDI] Edit mode entered (for bulk write)');
   }
 
   /**
    * Exit edit mode on the device.
-   * Changes made during edit mode are discarded unless confirmed.
    * Sends: F0 52 00 42 1F F7
    */
   async exitEditMode(): Promise<void> {
@@ -683,11 +751,11 @@ class MidiService {
 
     if (!this.isInEditMode) {
       console.log('[MIDI] Not in edit mode, nothing to exit');
-      return; // Not in edit mode
+      return;
     }
 
     const exitEdit = buildExitEditMessage();
-    console.log('[MIDI] Sending EXIT_EDIT:', Array.from(exitEdit).map(b => b.toString(16).padStart(2, '0')).join(' '));
+    console.log('[MIDI] Sending EXIT_EDIT (0x1F):', Array.from(exitEdit).map(b => b.toString(16).padStart(2, '0')).join(' '));
     this.outputPort.send(Array.from(exitEdit));
     this.isInEditMode = false;
     this.currentPreviewPatchId = null;
@@ -699,6 +767,7 @@ class MidiService {
 
   /**
    * Select a patch for preview (makes it the active patch on the device).
+   * Enables live mode automatically for real-time parameter changes.
    * @param patchId Patch number (0-99)
    */
   async selectPatchForPreview(patchId: number): Promise<void> {
@@ -710,9 +779,9 @@ class MidiService {
       throw new Error(`Invalid patch ID: ${patchId}. Must be 0-99.`);
     }
 
-    // Enter edit mode if not already
-    if (!this.isInEditMode) {
-      await this.enterEditMode();
+    // Enable live mode if not already (required for real-time parameter changes)
+    if (!this.isInLiveMode) {
+      await this.enableLiveMode();
     }
 
     // Select patch with preview mode (0x02)
@@ -734,8 +803,8 @@ class MidiService {
       throw new Error('Not connected to a MIDI device');
     }
 
-    // Enter edit mode and select patch if needed
-    if (!this.isInEditMode || this.currentPreviewPatchId !== patch.id) {
+    // Enable live mode and select patch if needed
+    if (!this.isInLiveMode || this.currentPreviewPatchId !== patch.id) {
       await this.selectPatchForPreview(patch.id);
     }
 
@@ -746,7 +815,14 @@ class MidiService {
   }
 
   /**
-   * Check if currently in edit/preview mode.
+   * Check if currently in live mode (real-time parameter changes enabled).
+   */
+  get inLiveMode(): boolean {
+    return this.isInLiveMode;
+  }
+
+  /**
+   * Check if currently in edit mode (for bulk write operations).
    */
   get inEditMode(): boolean {
     return this.isInEditMode;
@@ -963,14 +1039,20 @@ class MidiService {
 
   /**
    * Send a test parameter change to verify MIDI communication.
-   * This sends AMP Gain = 50 (a safe, audible test).
+   * This enables live mode and sends AMP Gain = 50 (a safe, audible test).
    */
-  testParameterChange(): void {
+  async testParameterChange(): Promise<void> {
     console.log('[MidiService] === TEST PARAMETER CHANGE ===');
 
     if (!this.outputPort) {
       console.error('[MidiService] TEST FAILED: outputPort is null');
       return;
+    }
+
+    // Enable live mode first (required for parameter changes)
+    if (!this.isInLiveMode) {
+      console.log('[MidiService] Enabling live mode for test...');
+      await this.enableLiveMode();
     }
 
     // Send AMP Gain = 50

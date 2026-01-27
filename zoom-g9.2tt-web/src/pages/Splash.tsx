@@ -383,10 +383,16 @@ export function Splash() {
     if (deviceState.status === 'connected' || deviceState.status === 'demo') {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- Derived state from device connection status
       setModalState(deviceState.status === 'connected' ? 'success' : 'demo');
-      const timer = setTimeout(() => navigate('/editor'), 600);
+
+      // Build URL with MIDI device ID as query param
+      const url = deviceState.deviceId
+        ? `/editor?midi=${encodeURIComponent(deviceState.deviceId)}`
+        : '/editor';
+
+      const timer = setTimeout(() => navigate(url), 600);
       return () => clearTimeout(timer);
     }
-  }, [deviceState.status, navigate]);
+  }, [deviceState.status, deviceState.deviceId, navigate]);
 
   const handleStart = async () => {
     if (!browserCheck.supported) {
