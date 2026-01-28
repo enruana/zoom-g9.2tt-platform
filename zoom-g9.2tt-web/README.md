@@ -3,7 +3,7 @@
 A modern, browser-based patch editor for the Zoom G9.2tt guitar multi-effects pedal. Built with React, TypeScript, and Web MIDI API.
 
 <p align="center">
-  <a href="https://g9.enruana.com"><strong>🎸 Try it live at g9.enruana.com</strong></a>
+  <a href="https://zoomg9.enruana.com"><strong>🎸 Try it live at zoomg9.enruana.com</strong></a>
 </p>
 
 ## Screenshots
@@ -126,7 +126,7 @@ Remote control your pedal from another device:
 
 ### Use the Live Platform (Recommended)
 
-Just visit **[g9.enruana.com](https://g9.enruana.com)** in Chrome - no installation required!
+Just visit **[zoomg9.enruana.com](https://zoomg9.enruana.com)** in Chrome - no installation required!
 
 ### Run Locally (Development)
 
@@ -268,7 +268,7 @@ npm run lint      # Run ESLint
 
 ## Deployment
 
-The live platform is hosted at **[g9.enruana.com](https://g9.enruana.com)**
+The live platform is hosted at **[zoomg9.enruana.com](https://zoomg9.enruana.com)**
 
 ### Firebase Hosting
 
@@ -331,6 +331,6 @@ MIT License
 
 Made by **enruana**
 
-- Website: [g9.enruana.com](https://g9.enruana.com)
+- Website: [zoomg9.enruana.com](https://zoomg9.enruana.com)
 - Email: felipemantillagomez@gmail.com
 - GitHub: [@enruana](https://github.com/enruana)

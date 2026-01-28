@@ -5,7 +5,7 @@ Modern web-based editor for the Zoom G9.2tt guitar multi-effects pedal, built on
 **Plataforma de edición web moderna para el pedal multiefectos Zoom G9.2tt, basada en ingeniería inversa completa del protocolo MIDI SysEx.**
 
 <p align="center">
-  <a href="https://g9.enruana.com"><strong>🎸 Try it live at g9.enruana.com</strong></a>
+  <a href="https://zoomg9.enruana.com"><strong>🎸 Try it live at zoomg9.enruana.com</strong></a>
 </p>
 
 ---
@@ -65,7 +65,7 @@ Fully responsive design for phones and tablets.
 
 | Resource | Description |
 |----------|-------------|
-| [**Live Platform**](https://g9.enruana.com) | Try it now in your browser |
+| [**Live Platform**](https://zoomg9.enruana.com) | Try it now in your browser |
 | [Web Editor Source](zoom-g9.2tt-web/) | React/TypeScript web application |
 | [Python Library](phases/02-python-library/) | Device control library |
 | [Protocol Spec](phases/01-reverse-engineering/06-protocol-specification/PROTOCOL.md) | Complete MIDI protocol |
@@ -145,7 +145,7 @@ Without EDIT_ENTER (0x12), the pedal silently ignores 0x31 commands.
 
 ### Use the Live Platform (Easiest)
 
-Visit **[g9.enruana.com](https://g9.enruana.com)** in Chrome - no installation required!
+Visit **[zoomg9.enruana.com](https://zoomg9.enruana.com)** in Chrome - no installation required!
 
 ### Run Locally (Development)
 
