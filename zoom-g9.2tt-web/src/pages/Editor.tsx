@@ -19,7 +19,6 @@ import { DuplicatePatchDialog } from '../components/dialogs/DuplicatePatchDialog
 import { RenamePatchDialog } from '../components/dialogs/RenamePatchDialog';
 import { BulkSendDialog } from '../components/dialogs/BulkSendDialog';
 import { UserMenu } from '../components/common/UserMenu';
-import { SyncStatus } from '../components/common/SyncStatus';
 import { getEditableParameters } from '../data/parameterMaps';
 import { MODULE_INFO, hasMultipleTypes } from '../data/effectTypes';
 import { MODULE_COLORS } from '../data/moduleColors';
@@ -71,6 +70,8 @@ export function Editor() {
   const [showSyncMenu, setShowSyncMenu] = useState(false);
   const [isSyncingFromPedal, setIsSyncingFromPedal] = useState(false);
   const [isSyncingToPedal, setIsSyncingToPedal] = useState(false);
+  const [isSyncingFromCloud, setIsSyncingFromCloud] = useState(false);
+  const [isSyncingToCloud, setIsSyncingToCloud] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const [showBulkSendDialog, setShowBulkSendDialog] = useState(false);
   const lastProgressUpdateRef = useRef(0);
@@ -84,6 +85,11 @@ export function Editor() {
   const isServer = sessionState.mode === 'server';
   const isClient = sessionState.mode === 'client';
   const isInSession = isServer || isClient;
+
+  // Effective live mode for UI display:
+  // - Client: shows server's live mode state (synced via Firebase)
+  // - Server: shows local isOnlineMode
+  const effectiveLiveMode = isClient ? sessionState.serverLiveMode : isOnlineMode;
 
   const handleModuleSelect = useCallback((moduleKey: ModuleName) => {
     setSelectedModule(prev => prev === moduleKey ? null : moduleKey);
@@ -328,8 +334,8 @@ export function Editor() {
   }, [deviceState.status, isDemo, patchState.patches.length, patchActions]);
 
   const handlePatchSelect = useCallback((id: number) => {
-    // Client mode with online: Send command to server
-    if (isClient && isOnlineMode) {
+    // Client mode: Always send command to server
+    if (isClient) {
       sessionActions.sendCommand({
         type: 'patchSelect',
         payload: { patchId: id },
@@ -337,9 +343,10 @@ export function Editor() {
       return;
     }
 
-    // Client offline, Server, or Standalone mode: Update local state
+    // Server or Standalone mode: Update local state
     patchActions.selectPatch(id);
-    if (isOnlineMode && isConnected && !isClient) {
+    // Server with live mode: also send to pedal
+    if (isOnlineMode && isConnected) {
       midiService.sendPatchChange(id);
     }
   }, [patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
@@ -447,8 +454,8 @@ export function Editor() {
       oldValueRef.current = newValue;
     }
 
-    // Client mode with online: Send command to server via session
-    if (isClient && isOnlineMode) {
+    // Client mode: Always send command to server
+    if (isClient) {
       sessionActions.sendCommand({
         type: 'paramChange',
         payload: {
@@ -461,10 +468,11 @@ export function Editor() {
       return;
     }
 
-    // Client offline, Server, or Standalone mode: Update locally
+    // Server or Standalone mode: Update locally
     patchActions.updateParameter(selectedModule, selectedParamIndex, newValue);
 
-    if (isOnlineMode && isConnected && !isClient) {
+    // Server with live mode: also send to pedal
+    if (isOnlineMode && isConnected) {
       midiService.sendParameter(selectedModule, selectedParamDef.id, newValue);
     }
   }, [selectedModule, selectedParamIndex, selectedParamDef, patchState.selectedPatchId, patchActions, isOnlineMode, isConnected, historyActions, isClient, sessionActions]);
@@ -474,8 +482,8 @@ export function Editor() {
 
     const newEnabled = !selectedModuleState.enabled;
 
-    // Client mode with online: Send command to server
-    if (isClient && isOnlineMode) {
+    // Client mode: Always send command to server
+    if (isClient) {
       sessionActions.sendCommand({
         type: 'moduleToggle',
         payload: { moduleKey: selectedModule, enabled: newEnabled },
@@ -483,9 +491,10 @@ export function Editor() {
       return;
     }
 
-    // Client offline, Server, or Standalone mode
+    // Server or Standalone mode
     patchActions.toggleModuleEnabled(selectedModule);
-    if (isOnlineMode && isConnected && !isClient) {
+    // Server with live mode: also send to pedal
+    if (isOnlineMode && isConnected) {
       midiService.sendModuleToggle(selectedModule, newEnabled);
     }
   }, [selectedModule, selectedModuleState, patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
@@ -493,8 +502,8 @@ export function Editor() {
   const handleModuleToggle = useCallback((moduleKey: ModuleName, enabled: boolean) => {
     if (!currentPatch) return;
 
-    // Client mode with online: Send command to server
-    if (isClient && isOnlineMode) {
+    // Client mode: Always send command to server
+    if (isClient) {
       sessionActions.sendCommand({
         type: 'moduleToggle',
         payload: { moduleKey, enabled },
@@ -502,9 +511,10 @@ export function Editor() {
       return;
     }
 
-    // Client offline, Server, or Standalone mode
+    // Server or Standalone mode
     patchActions.setModuleEnabled(moduleKey, enabled);
-    if (isOnlineMode && isConnected && !isClient) {
+    // Server with live mode: also send to pedal
+    if (isOnlineMode && isConnected) {
       midiService.sendModuleToggle(moduleKey, enabled);
     }
   }, [currentPatch, patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
@@ -521,8 +531,8 @@ export function Editor() {
   const handleTypeChange = useCallback((typeId: number) => {
     if (!selectedModule) return;
 
-    // Client mode with online: Send command to server
-    if (isClient && isOnlineMode) {
+    // Client mode: Always send command to server
+    if (isClient) {
       sessionActions.sendCommand({
         type: 'typeChange',
         payload: { moduleKey: selectedModule, typeId },
@@ -530,9 +540,10 @@ export function Editor() {
       return;
     }
 
-    // Client offline, Server, or Standalone mode
+    // Server or Standalone mode
     patchActions.updateModuleType(selectedModule, typeId);
-    if (isOnlineMode && isConnected && !isClient) {
+    // Server with live mode: also send to pedal
+    if (isOnlineMode && isConnected) {
       midiService.sendModuleType(selectedModule, typeId);
     }
   }, [selectedModule, patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
@@ -724,19 +735,20 @@ export function Editor() {
   }, [isRenaming]);
 
   const handleToggleOnlineMode = useCallback(async () => {
-    // For client mode, just toggle the state
+    // For client mode, send command to server to toggle live mode on the pedal
     if (isClient) {
-      if (isOnlineMode) {
-        setIsOnlineMode(false);
-        toast.show('Local mode - changes not sent to server');
-      } else {
-        setIsOnlineMode(true);
-        toast.show('Live mode - changes sync to server');
-      }
+      const newState = !sessionState.serverLiveMode;
+      toast.show(newState ? 'Enabling live mode on server...' : 'Disabling live mode on server...');
+
+      // Send command to server
+      sessionActions.sendCommand({
+        type: 'liveModeToggle',
+        payload: { enabled: newState },
+      });
       return;
     }
 
-    // For MIDI mode, need to be connected
+    // For MIDI mode (server), need to be connected
     if (!isConnected) return;
 
     if (isOnlineMode) {
@@ -748,7 +760,11 @@ export function Editor() {
       setIsOnlineMode(false);
       saveOnlineModePreference(false);
       shouldAutoEnableOnlineMode.current = false;
-      toast.show('Online mode disabled');
+      // Update session state so clients see the change
+      if (isServer) {
+        sessionActions.setServerLiveMode(false);
+      }
+      toast.show('Live mode disabled');
     } else {
       try {
         await midiService.enterEditMode();
@@ -758,13 +774,17 @@ export function Editor() {
         setIsOnlineMode(true);
         saveOnlineModePreference(true);
         shouldAutoEnableOnlineMode.current = true;
-        toast.show('Online mode enabled - changes sync to pedal');
+        // Update session state so clients see the change
+        if (isServer) {
+          sessionActions.setServerLiveMode(true);
+        }
+        toast.show('Live mode enabled - changes sync to pedal');
       } catch (err) {
         console.error('[Editor] Failed to enter online mode:', err);
         toast.show('Failed to enable online mode');
       }
     }
-  }, [isConnected, isOnlineMode, patchState.selectedPatchId, isClient]);
+  }, [isConnected, isOnlineMode, patchState.selectedPatchId, isClient, isServer, sessionState.serverLiveMode, sessionActions]);
 
   // Reset online mode when MIDI disconnects (but not for client mode)
   useEffect(() => {
@@ -773,12 +793,18 @@ export function Editor() {
     }
   }, [isConnected, isClient, isOnlineMode]);
 
-  // Auto-enable online mode when client joins a session
+  // Server: Sync local isOnlineMode when serverLiveMode changes (from remote command)
   useEffect(() => {
-    if (isClient && !isOnlineMode) {
-      setIsOnlineMode(true);
+    if (!isServer) return;
+    // When serverLiveMode changes (from remote client command), sync local state
+    if (sessionState.serverLiveMode !== isOnlineMode) {
+      console.log('[Editor] Syncing local isOnlineMode with serverLiveMode:', sessionState.serverLiveMode);
+      setIsOnlineMode(sessionState.serverLiveMode);
+      saveOnlineModePreference(sessionState.serverLiveMode);
+      shouldAutoEnableOnlineMode.current = sessionState.serverLiveMode;
+      toast.show(sessionState.serverLiveMode ? 'Live mode enabled by remote' : 'Live mode disabled by remote');
     }
-  }, [isClient]); // Only run when isClient changes, not isOnlineMode
+  }, [isServer, sessionState.serverLiveMode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Receive all patches from pedal (overwrite local)
   const handleReceiveFromPedal = useCallback(async () => {
@@ -863,7 +889,56 @@ export function Editor() {
     setShowBulkSendDialog(false);
   }, [isSyncingToPedal]);
 
-  const isSyncing = isSyncingFromPedal || isSyncingToPedal;
+  // Combined syncing state - defined before callbacks that use it
+  const isSyncing = isSyncingFromPedal || isSyncingToPedal || isSyncingFromCloud || isSyncingToCloud;
+
+  // Receive all patches from cloud (overwrite local)
+  const handleReceiveFromCloud = useCallback(async () => {
+    if (!authState.user || isSyncing) return;
+
+    setIsSyncingFromCloud(true);
+    setShowSyncMenu(false);
+
+    try {
+      const { loadPatches } = await import('../services/firebase/firestore');
+      const cloudPatches = await loadPatches(authState.user.uid);
+
+      if (cloudPatches && cloudPatches.length > 0) {
+        patchActions.setPatches(cloudPatches);
+        toast.success(`${cloudPatches.length} patches received from cloud`);
+      } else {
+        toast.info('No patches found in cloud');
+      }
+    } catch (error) {
+      console.error('Failed to receive patches from cloud:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to receive from cloud');
+    } finally {
+      setIsSyncingFromCloud(false);
+    }
+  }, [authState.user, isSyncing, patchActions]);
+
+  // Send all patches to cloud (backup)
+  const handleSendToCloud = useCallback(async () => {
+    if (!authState.user || isSyncing) return;
+
+    if (patchState.patches.length === 0) {
+      toast.error('No patches to send');
+      return;
+    }
+
+    setIsSyncingToCloud(true);
+    setShowSyncMenu(false);
+
+    try {
+      await syncActions.saveAllPatchesToCloud();
+      toast.success(`${patchState.patches.length} patches saved to cloud`);
+    } catch (error) {
+      console.error('Failed to send patches to cloud:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to send to cloud');
+    } finally {
+      setIsSyncingToCloud(false);
+    }
+  }, [authState.user, isSyncing, patchState.patches.length, syncActions]);
   const [showMobilePatches, setShowMobilePatches] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -880,25 +955,22 @@ export function Editor() {
               <button
                 onClick={handleToggleOnlineMode}
                 className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
-                  isOnlineMode
+                  effectiveLiveMode
                     ? 'bg-green-500/20 active:bg-green-500/30'
                     : 'bg-neutral-800/50 active:bg-neutral-700/50'
                 }`}
               >
                 <div
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    isOnlineMode
+                    effectiveLiveMode
                       ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)] animate-pulse'
                       : 'bg-neutral-600'
                   }`}
                 />
                 <span className={`text-[10px] font-medium ${
-                  isOnlineMode ? 'text-green-400' : 'text-neutral-500'
+                  effectiveLiveMode ? 'text-green-400' : 'text-neutral-500'
                 }`}>
-                  {isOnlineMode
-                    ? 'LIVE'
-                    : (isClient ? 'LOCAL' : 'OFFLINE')
-                  }
+                  {effectiveLiveMode ? 'LIVE' : 'OFFLINE'}
                 </span>
               </button>
             ) : (
@@ -1067,9 +1139,9 @@ export function Editor() {
             {/* Online Mode Toggle - for MIDI connected OR client mode */}
             {(isConnected || isClient) && (
               <ToggleButton
-                isOn={isOnlineMode}
-                onLabel={isClient ? "LIVE" : "LIVE"}
-                offLabel={isClient ? "LOCAL" : "OFFLINE"}
+                isOn={effectiveLiveMode}
+                onLabel="LIVE"
+                offLabel="OFFLINE"
                 onClick={handleToggleOnlineMode}
                 size="sm"
               />
@@ -1101,8 +1173,8 @@ export function Editor() {
               </IconButton>
             </div>
 
-            {/* Sync Menu (only when MIDI connected and not client) */}
-            {isConnected && !isClient && (
+            {/* Sync Menu (when MIDI connected OR logged in, not client mode) */}
+            {(isConnected || authState.user) && !isClient && (
               <div className="relative">
                 <Button
                   onClick={() => setShowSyncMenu(!showSyncMenu)}
@@ -1115,9 +1187,9 @@ export function Editor() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                   ) : undefined}
-                  title="Sync with pedal"
+                  title="Sync patches"
                 >
-                  {isSyncing ? `${syncProgress}%` : 'Sync'}
+                  {isSyncing ? (isSyncingFromCloud || isSyncingToCloud ? 'Syncing...' : `${syncProgress}%`) : 'Sync'}
                 </Button>
 
                 {showSyncMenu && !isSyncing && (
@@ -1125,35 +1197,81 @@ export function Editor() {
                     <div className="fixed inset-0 z-40" onClick={() => setShowSyncMenu(false)} />
                     <div className="absolute right-0 mt-2 w-64 bg-gradient-to-b from-neutral-800 to-neutral-900 rounded-xl shadow-2xl border border-neutral-700/50 z-50 overflow-hidden">
                       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500" />
-                      <button
-                        onClick={handleReceiveFromPedal}
-                        className="w-full p-4 text-left text-sm text-neutral-300 hover:bg-neutral-700/50 flex items-center gap-3 transition-all group"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 flex items-center justify-center transition-colors">
-                          <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="font-medium text-white">Receive from Pedal</div>
-                          <div className="text-xs text-neutral-500">Load all patches from device</div>
-                        </div>
-                      </button>
-                      <div className="border-t border-neutral-700/50 mx-4" />
-                      <button
-                        onClick={handleSendToPedal}
-                        className="w-full p-4 text-left text-sm text-neutral-300 hover:bg-neutral-700/50 flex items-center gap-3 transition-all group"
-                      >
-                        <div className="w-10 h-10 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors">
-                          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="font-medium text-white">Send to Pedal</div>
-                          <div className="text-xs text-neutral-500">Write all patches to device</div>
-                        </div>
-                      </button>
+
+                      {/* Pedal section (only when connected) */}
+                      {isConnected && (
+                        <>
+                          <div className="px-4 pt-3 pb-1">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Pedal</span>
+                          </div>
+                          <button
+                            onClick={handleReceiveFromPedal}
+                            className="w-full px-4 py-3 text-left text-sm text-neutral-300 hover:bg-neutral-700/50 flex items-center gap-3 transition-all group"
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-green-500/10 group-hover:bg-green-500/20 flex items-center justify-center transition-colors">
+                              <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="font-medium text-white text-sm">Receive from Pedal</div>
+                              <div className="text-[11px] text-neutral-500">Load patches from device</div>
+                            </div>
+                          </button>
+                          <button
+                            onClick={handleSendToPedal}
+                            className="w-full px-4 py-3 text-left text-sm text-neutral-300 hover:bg-neutral-700/50 flex items-center gap-3 transition-all group"
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-blue-500/10 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors">
+                              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="font-medium text-white text-sm">Send to Pedal</div>
+                              <div className="text-[11px] text-neutral-500">Write patches to device</div>
+                            </div>
+                          </button>
+                        </>
+                      )}
+
+                      {/* Cloud section (only when logged in) */}
+                      {authState.user && (
+                        <>
+                          {isConnected && <div className="border-t border-neutral-700/50 mx-4 mt-1" />}
+                          <div className="px-4 pt-3 pb-1">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Cloud</span>
+                          </div>
+                          <button
+                            onClick={handleReceiveFromCloud}
+                            className="w-full px-4 py-3 text-left text-sm text-neutral-300 hover:bg-neutral-700/50 flex items-center gap-3 transition-all group"
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-cyan-500/10 group-hover:bg-cyan-500/20 flex items-center justify-center transition-colors">
+                              <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="font-medium text-white text-sm">Receive from Cloud</div>
+                              <div className="text-[11px] text-neutral-500">Load patches from backup</div>
+                            </div>
+                          </button>
+                          <button
+                            onClick={handleSendToCloud}
+                            className="w-full px-4 py-3 text-left text-sm text-neutral-300 hover:bg-neutral-700/50 flex items-center gap-3 transition-all group"
+                          >
+                            <div className="w-9 h-9 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 flex items-center justify-center transition-colors">
+                              <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="font-medium text-white text-sm">Send to Cloud</div>
+                              <div className="text-[11px] text-neutral-500">Backup patches to cloud</div>
+                            </div>
+                          </button>
+                        </>
+                      )}
                     </div>
                   </>
                 )}
@@ -1188,8 +1306,6 @@ export function Editor() {
             </Button>
 
             <div className="w-px h-6 bg-neutral-700" />
-
-            <SyncStatus showLabel />
 
             <UserMenu />
           </div>
@@ -1407,27 +1523,26 @@ export function Editor() {
                     setShowMobileMenu(false);
                   }}
                   className={`w-full p-3 rounded-lg flex items-center gap-3 ${
-                    isOnlineMode ? 'bg-green-500/20 text-green-400' : 'bg-neutral-800 text-neutral-300'
+                    effectiveLiveMode ? 'bg-green-500/20 text-green-400' : 'bg-neutral-800 text-neutral-300'
                   }`}
                 >
-                  <span className={`w-3 h-3 rounded-full ${isOnlineMode ? 'bg-green-500 animate-pulse' : 'bg-neutral-600'}`} />
-                  {isOnlineMode
-                    ? (isClient ? 'Live Mode ON (Remote)' : 'Live Mode ON')
-                    : (isClient ? 'Local Mode (Changes not sent)' : 'Live Mode OFF')
-                  }
+                  <span className={`w-3 h-3 rounded-full ${effectiveLiveMode ? 'bg-green-500 animate-pulse' : 'bg-neutral-600'}`} />
+                  {effectiveLiveMode ? 'Live Mode ON' : 'Live Mode OFF'}
                 </button>
               )}
 
               {/* Sync options - only for MIDI connected, not client */}
               {isConnected && !isClient && (
                 <>
+                  {/* Pedal sync */}
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 px-1 pt-2">Pedal</div>
                   <button
                     onClick={() => {
                       handleReceiveFromPedal();
                       setShowMobileMenu(false);
                     }}
                     disabled={isSyncing}
-                    className="w-full p-3 rounded-lg bg-neutral-800 text-neutral-300 flex items-center gap-3"
+                    className="w-full p-3 rounded-lg bg-neutral-800 text-neutral-300 flex items-center gap-3 disabled:opacity-50"
                   >
                     <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1440,12 +1555,45 @@ export function Editor() {
                       setShowMobileMenu(false);
                     }}
                     disabled={isSyncing}
-                    className="w-full p-3 rounded-lg bg-neutral-800 text-neutral-300 flex items-center gap-3"
+                    className="w-full p-3 rounded-lg bg-neutral-800 text-neutral-300 flex items-center gap-3 disabled:opacity-50"
                   >
                     <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     Send to Pedal
+                  </button>
+                </>
+              )}
+
+              {/* Cloud sync - always available when logged in */}
+              {authState.user && (
+                <>
+                  <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 px-1 pt-2">Cloud</div>
+                  <button
+                    onClick={() => {
+                      handleReceiveFromCloud();
+                      setShowMobileMenu(false);
+                    }}
+                    disabled={isSyncing}
+                    className="w-full p-3 rounded-lg bg-neutral-800 text-neutral-300 flex items-center gap-3 disabled:opacity-50"
+                  >
+                    <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                    </svg>
+                    Receive from Cloud
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSendToCloud();
+                      setShowMobileMenu(false);
+                    }}
+                    disabled={isSyncing}
+                    className="w-full p-3 rounded-lg bg-neutral-800 text-neutral-300 flex items-center gap-3 disabled:opacity-50"
+                  >
+                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Send to Cloud
                   </button>
                 </>
               )}
@@ -1482,11 +1630,6 @@ export function Editor() {
               )}
 
               <div className="border-t border-neutral-800 my-2" />
-
-              {/* Cloud sync status */}
-              <div className="p-3 rounded-lg bg-neutral-800/50">
-                <SyncStatus showLabel />
-              </div>
 
               {/* User menu */}
               <div className="p-3 rounded-lg bg-neutral-800/50">

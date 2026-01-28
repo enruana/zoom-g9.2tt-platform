@@ -219,8 +219,9 @@ class SessionService {
    * Broadcast current state to all clients.
    * @param patches All patches (Record<number, Patch>)
    * @param currentPatchId Currently selected patch ID
+   * @param isLiveMode Whether the server is in live mode (sending to pedal)
    */
-  async broadcastState(patches: Patch[], currentPatchId: number): Promise<void> {
+  async broadcastState(patches: Patch[], currentPatchId: number, isLiveMode: boolean): Promise<void> {
     if (!this.db || !this._sessionCode || this._mode !== 'server') {
       return;
     }
@@ -235,6 +236,7 @@ class SessionService {
       currentPatchId,
       allPatches,
       lastUpdated: Date.now(),
+      isLiveMode,
     };
 
     const stateRef = ref(this.db, `sessions/${this._sessionCode}/state`);

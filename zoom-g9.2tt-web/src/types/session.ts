@@ -21,12 +21,13 @@ export type CommandType =
   | 'paramChange'
   | 'patchSelect'
   | 'moduleToggle'
-  | 'typeChange';
+  | 'typeChange'
+  | 'liveModeToggle';
 
 /** Command from client to server */
 export interface SessionCommand {
   type: CommandType;
-  payload: ParameterChangePayload | PatchSelectPayload | ModuleTogglePayload | TypeChangePayload;
+  payload: ParameterChangePayload | PatchSelectPayload | ModuleTogglePayload | TypeChangePayload | LiveModeTogglePayload;
   clientId: string;
   timestamp: number;
 }
@@ -56,6 +57,11 @@ export interface TypeChangePayload {
   typeId: number;
 }
 
+/** Payload for live mode toggle command */
+export interface LiveModeTogglePayload {
+  enabled: boolean;
+}
+
 /** Connected client info */
 export interface SessionClient {
   userId: string;
@@ -68,6 +74,7 @@ export interface SessionState {
   currentPatchId: number;
   allPatches: Record<number, Patch>;
   lastUpdated: number;
+  isLiveMode: boolean;
 }
 
 /** Session context state for React */
@@ -81,6 +88,8 @@ export interface SessionContextState {
   error: string | null;
   mySessions: ActiveSessionInfo[];
   isLoadingMySessions: boolean;
+  /** Server's live mode state - synced to all clients */
+  serverLiveMode: boolean;
 }
 
 /** Session context actions */
@@ -92,6 +101,8 @@ export interface SessionActions {
   sendCommand: (command: Omit<SessionCommand, 'clientId' | 'timestamp'>) => Promise<void>;
   clearError: () => void;
   fetchMySessions: () => Promise<void>;
+  /** Update server's live mode state (server only - broadcasts to clients) */
+  setServerLiveMode: (isLive: boolean) => void;
 }
 
 /** Active session info for displaying user's sessions */

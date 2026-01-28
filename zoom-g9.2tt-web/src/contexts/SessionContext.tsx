@@ -44,6 +44,7 @@ interface State {
   error: string | null;
   mySessions: ActiveSessionInfo[];
   isLoadingMySessions: boolean;
+  serverLiveMode: boolean;
 }
 
 type Action =
@@ -55,6 +56,7 @@ type Action =
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'SET_MY_SESSIONS'; sessions: ActiveSessionInfo[] }
   | { type: 'SET_LOADING_MY_SESSIONS'; isLoading: boolean }
+  | { type: 'SET_SERVER_LIVE_MODE'; isLive: boolean }
   | { type: 'RESET' };
 
 const initialState: State = {
@@ -67,6 +69,7 @@ const initialState: State = {
   error: null,
   mySessions: [],
   isLoadingMySessions: false,
+  serverLiveMode: false,
 };
 
 function reducer(state: State, action: Action): State {
@@ -99,6 +102,9 @@ function reducer(state: State, action: Action): State {
 
     case 'SET_LOADING_MY_SESSIONS':
       return { ...state, isLoadingMySessions: action.isLoading };
+
+    case 'SET_SERVER_LIVE_MODE':
+      return { ...state, serverLiveMode: action.isLive };
 
     case 'RESET':
       return initialState;
@@ -189,12 +195,12 @@ export function SessionProvider({ children }: SessionProviderProps) {
     // Debounce state broadcasts
     const timeoutId = setTimeout(() => {
       if (patches.length > 0 && patchState.selectedPatchId !== null) {
-        sessionService.broadcastState(patches, patchState.selectedPatchId);
+        sessionService.broadcastState(patches, patchState.selectedPatchId, state.serverLiveMode);
       }
     }, 100);
 
     return () => clearTimeout(timeoutId);
-  }, [state.mode, state.sessionCode, patches, patchState.selectedPatchId]);
+  }, [state.mode, state.sessionCode, patches, patchState.selectedPatchId, state.serverLiveMode]);
 
   // ============================================
   // Server: Process incoming commands
@@ -248,6 +254,26 @@ export function SessionProvider({ children }: SessionProviderProps) {
           midiService.sendModuleType(payload.moduleKey, payload.typeId);
           break;
         }
+
+        case 'liveModeToggle': {
+          const payload = command.payload as { enabled: boolean };
+          console.log('[SessionContext] Received liveModeToggle command:', payload.enabled);
+          // Toggle live mode on the MIDI pedal and update state
+          if (payload.enabled) {
+            midiService.enterEditMode().then(() => {
+              dispatch({ type: 'SET_SERVER_LIVE_MODE', isLive: true });
+            }).catch((err) => {
+              console.error('[SessionContext] Failed to enter edit mode:', err);
+            });
+          } else {
+            midiService.exitEditMode().then(() => {
+              dispatch({ type: 'SET_SERVER_LIVE_MODE', isLive: false });
+            }).catch((err) => {
+              console.error('[SessionContext] Failed to exit edit mode:', err);
+            });
+          }
+          break;
+        }
       }
     });
 
@@ -268,6 +294,11 @@ export function SessionProvider({ children }: SessionProviderProps) {
       if (sessionState.allPatches) {
         const patchesArray = Object.values(sessionState.allPatches);
         patchActions.setRemoteState(patchesArray, sessionState.currentPatchId);
+      }
+
+      // Update server live mode state
+      if (sessionState.isLiveMode !== undefined) {
+        dispatch({ type: 'SET_SERVER_LIVE_MODE', isLive: sessionState.isLiveMode });
       }
     });
 
@@ -323,9 +354,9 @@ export function SessionProvider({ children }: SessionProviderProps) {
         },
       });
 
-      // Broadcast initial state
+      // Broadcast initial state (live mode starts as false)
       if (patches.length > 0 && patchState.selectedPatchId !== null) {
-        await sessionService.broadcastState(patches, patchState.selectedPatchId);
+        await sessionService.broadcastState(patches, patchState.selectedPatchId, false);
       }
 
       return code;
@@ -422,6 +453,10 @@ export function SessionProvider({ children }: SessionProviderProps) {
     }
   }, [authState.user]);
 
+  const setServerLiveMode = useCallback((isLive: boolean): void => {
+    dispatch({ type: 'SET_SERVER_LIVE_MODE', isLive });
+  }, []);
+
   // ============================================
   // Memoized context value
   // ============================================
@@ -438,6 +473,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
         error: state.error,
         mySessions: state.mySessions,
         isLoadingMySessions: state.isLoadingMySessions,
+        serverLiveMode: state.serverLiveMode,
       },
       actions: {
         createSession,
@@ -447,6 +483,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
         sendCommand,
         clearError,
         fetchMySessions,
+        setServerLiveMode,
       },
     }),
     [
@@ -459,6 +496,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
       state.error,
       state.mySessions,
       state.isLoadingMySessions,
+      state.serverLiveMode,
       createSession,
       joinSession,
       leaveSession,
@@ -466,6 +504,7 @@ export function SessionProvider({ children }: SessionProviderProps) {
       sendCommand,
       clearError,
       fetchMySessions,
+      setServerLiveMode,
     ]
   );
 
