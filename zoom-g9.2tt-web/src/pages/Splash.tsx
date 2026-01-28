@@ -2,14 +2,17 @@ import { useState, useEffect, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDevice } from '../contexts/DeviceContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useSession } from '../contexts/SessionContext';
 import { midiService } from '../services/midi/MidiService';
 import { TroubleshootPanel } from '../components/common/TroubleshootPanel';
 import { checkBrowserCompatibility } from '../utils/browserCheck';
 import { StarField } from '../components/three/StarField';
+import { validateSessionCode, normalizeSessionCode } from '../services/session';
 import type { MidiDeviceInfo } from '../types/midi';
 import type { DeviceIdentity } from '../services/midi/protocol';
+import type { ActiveSessionInfo } from '../types/session';
 
-type ModalState = 'closed' | 'requesting' | 'selecting' | 'connecting' | 'identifying' | 'warning' | 'success' | 'demo';
+type ModalState = 'closed' | 'mode-select' | 'requesting' | 'selecting' | 'connecting' | 'identifying' | 'warning' | 'success' | 'demo' | 'joining-session';
 
 interface DeviceWarningInfo {
   device: MidiDeviceInfo;
@@ -51,30 +54,44 @@ function DeviceModal({
   devices,
   error,
   warningInfo,
+  joinCode,
+  mySessions,
+  isLoadingMySessions,
   onClose,
   onSelectDevice,
   onDemo,
   onContinueAnyway,
   onSelectDifferent,
   onShowTroubleshoot,
+  onConnectPedal,
+  onJoinSession,
+  onJoinCodeChange,
+  onJoinMySession,
 }: {
   state: ModalState;
   devices: MidiDeviceInfo[];
   error: string | null;
   warningInfo: DeviceWarningInfo | null;
+  joinCode: string;
+  mySessions: ActiveSessionInfo[];
+  isLoadingMySessions: boolean;
   onClose: () => void;
   onSelectDevice: (device: MidiDeviceInfo) => void;
   onDemo: () => void;
   onContinueAnyway: () => void;
   onSelectDifferent: () => void;
   onShowTroubleshoot: () => void;
+  onConnectPedal: () => void;
+  onJoinSession: () => void;
+  onJoinCodeChange: (code: string) => void;
+  onJoinMySession: (session: ActiveSessionInfo) => void;
 }) {
   if (state === 'closed') return null;
 
-  const canClose = state === 'selecting' || !!error;
+  const canClose = state === 'mode-select' || state === 'selecting' || !!error;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop with blur */}
       <div
         className="absolute inset-0 bg-black/80 backdrop-blur-sm"
@@ -83,11 +100,16 @@ function DeviceModal({
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-neutral-700/50 bg-gradient-to-b from-neutral-800 to-neutral-900 shadow-2xl"
+        className="relative w-full sm:max-w-md overflow-hidden rounded-t-2xl sm:rounded-2xl border-t sm:border border-neutral-700/50 bg-gradient-to-b from-neutral-800 to-neutral-900 shadow-2xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto"
         style={{ animation: 'modal-enter 0.3s ease-out' }}
       >
         {/* Decorative top gradient */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500" />
+
+        {/* Mobile drag handle */}
+        <div className="sm:hidden flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 bg-neutral-600 rounded-full" />
+        </div>
 
         {/* Close button */}
         {canClose && (
@@ -102,7 +124,7 @@ function DeviceModal({
         )}
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 pt-2 sm:pt-6">
           {/* Error Banner */}
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
@@ -120,6 +142,179 @@ function DeviceModal({
                   Need help? View troubleshooting guide
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Mode Selection State */}
+          {state === 'mode-select' && (
+            <>
+              {/* Header */}
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                  </svg>
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Choose Mode</h2>
+                  <p className="text-neutral-400 text-xs sm:text-sm">How would you like to use the editor?</p>
+                </div>
+              </div>
+
+              {/* My Active Sessions - Join as client */}
+              {isLoadingMySessions ? (
+                <div className="mb-4 p-3 bg-neutral-800/30 rounded-xl border border-neutral-700/50">
+                  <div className="flex items-center gap-3 text-neutral-400">
+                    <div className="w-4 h-4 border-2 border-neutral-500 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-sm">Checking for active sessions...</span>
+                  </div>
+                </div>
+              ) : mySessions.length > 0 ? (
+                <div className="mb-4 sm:mb-6">
+                  <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-2 px-1">
+                    Your Active Sessions
+                  </div>
+                  <div className="space-y-2">
+                    {mySessions.map((session) => (
+                      <button
+                        key={session.sessionCode}
+                        onClick={() => onJoinMySession(session)}
+                        className="group w-full p-3 sm:p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 hover:from-green-500/20 hover:to-emerald-500/20 active:from-green-500/30 active:to-emerald-500/30 rounded-xl text-left border border-green-500/30 hover:border-green-500/50 transition-all duration-200"
+                      >
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-green-500/20 group-hover:bg-green-500/30 flex items-center justify-center transition-colors flex-shrink-0">
+                            <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                            </svg>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-green-400 font-bold tracking-wider">{session.sessionCode}</span>
+                              <span className="px-1.5 py-0.5 text-[10px] bg-green-500/20 text-green-400 rounded font-medium">ACTIVE</span>
+                            </div>
+                            <div className="text-[11px] sm:text-xs text-neutral-500 flex items-center gap-2 mt-0.5">
+                              <span>{session.meta.deviceName}</span>
+                              {session.clientCount > 0 && (
+                                <>
+                                  <span className="text-neutral-600">•</span>
+                                  <span className="text-green-400">{session.clientCount} connected</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-[10px] text-green-400/70 hidden sm:inline">Join as client</span>
+                            <svg className="w-5 h-5 text-green-400/50 group-hover:text-green-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Mode Options */}
+              <div className="space-y-3 mb-4 sm:mb-6">
+                {/* Connect Pedal (Server Mode) */}
+                <button
+                  onClick={onConnectPedal}
+                  className="group w-full p-3 sm:p-4 bg-neutral-800/50 hover:bg-neutral-700/50 active:bg-neutral-600/50 rounded-xl text-left border border-neutral-700/50 hover:border-blue-500/50 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-blue-500/20 group-hover:bg-blue-500/30 flex items-center justify-center transition-colors flex-shrink-0">
+                      <MidiIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-white text-sm sm:text-base">Connect My Pedal</div>
+                      <div className="text-[11px] sm:text-xs text-neutral-500">Control your own G9.2tt via MIDI</div>
+                    </div>
+                    <svg className="w-5 h-5 text-neutral-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </button>
+
+                {/* Join Session (Client Mode) */}
+                <div className="p-3 sm:p-4 bg-neutral-800/50 rounded-xl border border-neutral-700/50">
+                  <div className="flex items-center gap-3 sm:gap-4 mb-3">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-white text-sm sm:text-base">Join Session</div>
+                      <div className="text-[11px] sm:text-xs text-neutral-500">Control someone else's pedal remotely</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter code"
+                      value={joinCode}
+                      onChange={(e) => onJoinCodeChange(e.target.value.toUpperCase())}
+                      maxLength={6}
+                      className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 sm:py-2.5 bg-neutral-900 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 text-center tracking-widest font-mono uppercase text-sm sm:text-base focus:outline-none focus:border-green-500 transition-colors"
+                    />
+                    <button
+                      onClick={onJoinSession}
+                      disabled={joinCode.length !== 6}
+                      className="px-4 sm:px-4 py-2.5 bg-green-600 hover:bg-green-500 active:bg-green-400 disabled:bg-neutral-700 disabled:text-neutral-500 rounded-lg font-medium text-white text-sm sm:text-base transition-all disabled:cursor-not-allowed flex-shrink-0"
+                    >
+                      Join
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-4 sm:my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-neutral-700/50"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-neutral-900 px-3 text-neutral-500">or</span>
+                </div>
+              </div>
+
+              {/* Demo Mode Button */}
+              <button
+                onClick={onDemo}
+                className="w-full p-3 sm:p-4 rounded-xl border-2 border-dashed border-neutral-700 hover:border-purple-500/50 active:border-purple-500/70 hover:bg-purple-500/5 active:bg-purple-500/10 transition-all group"
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium text-neutral-300 group-hover:text-purple-300 transition-colors text-sm sm:text-base">Try Demo Mode</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-500">Explore without a device</div>
+                  </div>
+                </div>
+              </button>
+            </>
+          )}
+
+          {/* Joining Session State */}
+          {state === 'joining-session' && (
+            <div className="text-center py-8">
+              <div className="relative w-20 h-20 mx-auto mb-6">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full border-4 border-neutral-700 border-t-green-500 animate-spin" />
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Joining Session</h3>
+              <p className="text-neutral-400 text-sm">Connecting to <span className="text-green-400 font-mono">{joinCode}</span>...</p>
             </div>
           )}
 
@@ -143,49 +338,49 @@ function DeviceModal({
           {state === 'selecting' && (
             <>
               {/* Header */}
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                  <MidiIcon className="w-6 h-6 text-white" />
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg flex-shrink-0">
+                  <MidiIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">Connect Device</h2>
-                  <p className="text-neutral-400 text-sm">Select your MIDI interface</p>
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Connect Device</h2>
+                  <p className="text-neutral-400 text-xs sm:text-sm">Select your MIDI interface</p>
                 </div>
               </div>
 
               {/* Device List */}
               {devices.length === 0 ? (
-                <div className="py-8 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-800 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="py-6 sm:py-8 text-center">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-neutral-800 flex items-center justify-center">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-neutral-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M12 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-neutral-400 font-medium mb-1">No MIDI devices found</p>
-                  <p className="text-neutral-500 text-sm">Connect your device and try again</p>
+                  <p className="text-neutral-400 font-medium mb-1 text-sm sm:text-base">No MIDI devices found</p>
+                  <p className="text-neutral-500 text-xs sm:text-sm">Connect your device and try again</p>
                 </div>
               ) : (
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                   {devices.map((device, index) => (
                     <button
                       key={device.id}
                       onClick={() => onSelectDevice(device)}
-                      className="group w-full p-4 bg-neutral-800/50 hover:bg-neutral-700/50 rounded-xl text-left border border-neutral-700/50 hover:border-blue-500/50 transition-all duration-200"
+                      className="group w-full p-3 sm:p-4 bg-neutral-800/50 hover:bg-neutral-700/50 active:bg-neutral-600/50 rounded-xl text-left border border-neutral-700/50 hover:border-blue-500/50 transition-all duration-200"
                       style={{ animation: `fade-in 0.3s ease-out ${index * 0.1}s both` }}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-neutral-700 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors">
-                          <svg className="w-5 h-5 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-neutral-700 group-hover:bg-blue-500/20 flex items-center justify-center transition-colors flex-shrink-0">
+                          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 group-hover:text-blue-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                           </svg>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-white truncate">{device.name}</div>
+                          <div className="font-medium text-white truncate text-sm sm:text-base">{device.name}</div>
                           {device.manufacturer && (
-                            <div className="text-xs text-neutral-500">{device.manufacturer}</div>
+                            <div className="text-[11px] sm:text-xs text-neutral-500 truncate">{device.manufacturer}</div>
                           )}
                         </div>
-                        <svg className="w-5 h-5 text-neutral-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-5 h-5 text-neutral-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </div>
@@ -195,7 +390,7 @@ function DeviceModal({
               )}
 
               {/* Divider */}
-              <div className="relative my-6">
+              <div className="relative my-4 sm:my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-neutral-700/50"></div>
                 </div>
@@ -207,18 +402,18 @@ function DeviceModal({
               {/* Demo Mode Button */}
               <button
                 onClick={onDemo}
-                className="w-full p-4 rounded-xl border-2 border-dashed border-neutral-700 hover:border-purple-500/50 hover:bg-purple-500/5 transition-all group"
+                className="w-full p-3 sm:p-4 rounded-xl border-2 border-dashed border-neutral-700 hover:border-purple-500/50 active:border-purple-500/70 hover:bg-purple-500/5 active:bg-purple-500/10 transition-all group"
               >
                 <div className="flex items-center justify-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div className="text-left">
-                    <div className="font-medium text-neutral-300 group-hover:text-purple-300 transition-colors">Try Demo Mode</div>
-                    <div className="text-xs text-neutral-500">Explore without a device</div>
+                    <div className="font-medium text-neutral-300 group-hover:text-purple-300 transition-colors text-sm sm:text-base">Try Demo Mode</div>
+                    <div className="text-[11px] sm:text-xs text-neutral-500">Explore without a device</div>
                   </div>
                 </div>
               </button>
@@ -371,11 +566,13 @@ export function Splash() {
   const navigate = useNavigate();
   const { state: deviceState, actions } = useDevice();
   const { state: authState, actions: authActions } = useAuth();
+  const { state: sessionState, actions: sessionActions } = useSession();
   const [modalState, setModalState] = useState<ModalState>('closed');
   const [devices, setDevices] = useState<MidiDeviceInfo[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showTroubleshoot, setShowTroubleshoot] = useState(false);
   const [warningInfo, setWarningInfo] = useState<DeviceWarningInfo | null>(null);
+  const [joinCode, setJoinCode] = useState('');
 
   const browserCheck = checkBrowserCompatibility();
 
@@ -394,7 +591,15 @@ export function Splash() {
     }
   }, [deviceState.status, deviceState.deviceId, navigate]);
 
-  const handleStart = async () => {
+  const handleStart = () => {
+    setError(null);
+    setJoinCode('');
+    setModalState('mode-select');
+    // Fetch user's active sessions
+    sessionActions.fetchMySessions();
+  };
+
+  const handleConnectPedal = async () => {
     if (!browserCheck.supported) {
       setError(browserCheck.message);
       setModalState('selecting');
@@ -419,6 +624,40 @@ export function Splash() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to access MIDI');
       setModalState('selecting');
+    }
+  };
+
+  const handleJoinSession = async () => {
+    const normalizedCode = normalizeSessionCode(joinCode);
+
+    if (!validateSessionCode(normalizedCode)) {
+      setError('Invalid session code. Please enter a 6-character code.');
+      return;
+    }
+
+    setError(null);
+    setModalState('joining-session');
+
+    try {
+      await sessionActions.joinSession(normalizedCode);
+      navigate(`/editor?session=${normalizedCode}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to join session');
+      setModalState('mode-select');
+    }
+  };
+
+  const handleJoinMySession = async (session: ActiveSessionInfo) => {
+    // Join your own session as a client (e.g., from phone to control PC)
+    setError(null);
+    setModalState('joining-session');
+
+    try {
+      await sessionActions.joinSession(session.sessionCode);
+      navigate(`/editor?session=${session.sessionCode}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to join session');
+      setModalState('mode-select');
     }
   };
 
@@ -618,12 +857,19 @@ export function Splash() {
         devices={devices}
         error={error}
         warningInfo={warningInfo}
+        joinCode={joinCode}
+        mySessions={sessionState.mySessions}
+        isLoadingMySessions={sessionState.isLoadingMySessions}
         onClose={handleClose}
         onSelectDevice={handleDeviceSelect}
         onDemo={handleDemo}
         onContinueAnyway={handleContinueAnyway}
         onSelectDifferent={handleSelectDifferent}
         onShowTroubleshoot={() => setShowTroubleshoot(true)}
+        onConnectPedal={handleConnectPedal}
+        onJoinSession={handleJoinSession}
+        onJoinCodeChange={setJoinCode}
+        onJoinMySession={handleJoinMySession}
       />
 
       {/* Troubleshoot */}

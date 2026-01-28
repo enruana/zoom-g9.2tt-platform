@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "sessions": {
+      "$code": {
+        ".read": "auth != null",
+        "meta": {
+          ".write": "auth != null && (!data.exists() || data.child('hostUserId').val() === auth.uid)"
+        },
+        "state": {
+          ".write": "auth != null && root.child('sessions/'+$code+'/meta/hostUserId').val() === auth.uid"
+        },
+        "commands": {
+          ".write": "auth != null"
+        },
+        "clients": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        }
+      }
+    }
+  }
+}

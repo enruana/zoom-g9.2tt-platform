@@ -44,6 +44,8 @@ export interface PatchActions {
   setError: (error: string | null) => void;
   /** Clear all patches */
   clearPatches: () => void;
+  /** Set remote state from server (for client mode) */
+  setRemoteState: (patches: Patch[], selectedPatchId: number) => void;
 }
 
 /** Combined context value */
@@ -67,7 +69,8 @@ type PatchAction =
   | { type: 'RENAME_PATCH'; patchId: number; newName: string }
   | { type: 'SET_LOADING'; isLoading: boolean; progress: number }
   | { type: 'SET_ERROR'; error: string | null }
-  | { type: 'CLEAR_PATCHES' };
+  | { type: 'CLEAR_PATCHES' }
+  | { type: 'SET_REMOTE_STATE'; patches: Patch[]; selectedPatchId: number };
 
 // Load patches from localStorage
 function loadPatchesFromStorage(): Patch[] {
@@ -310,6 +313,15 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
     case 'CLEAR_PATCHES':
       return initialState;
 
+    case 'SET_REMOTE_STATE':
+      return {
+        ...state,
+        patches: action.patches,
+        selectedPatchId: action.selectedPatchId,
+        isLoading: false,
+        error: null,
+      };
+
     default:
       return state;
   }
@@ -361,6 +373,8 @@ export function PatchProvider({ children }: PatchProviderProps) {
         dispatch({ type: 'SET_LOADING', isLoading, progress }),
       setError: (error: string | null) => dispatch({ type: 'SET_ERROR', error }),
       clearPatches: () => dispatch({ type: 'CLEAR_PATCHES' }),
+      setRemoteState: (patches: Patch[], selectedPatchId: number) =>
+        dispatch({ type: 'SET_REMOTE_STATE', patches, selectedPatchId }),
     }),
     []
   );

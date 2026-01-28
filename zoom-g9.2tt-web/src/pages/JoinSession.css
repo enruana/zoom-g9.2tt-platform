@@ -1,0 +1,187 @@
+.join-session-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  padding: 20px;
+}
+
+.join-session-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+}
+
+@media (min-width: 480px) {
+  .join-session-card {
+    padding: 40px;
+  }
+}
+
+.join-session-logo {
+  color: #4ade80;
+  margin-bottom: 20px;
+}
+
+.join-session-card h1 {
+  color: #fff;
+  font-size: 24px;
+  margin: 0 0 24px 0;
+  font-weight: 600;
+}
+
+.join-session-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.join-session-status p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.join-session-status strong {
+  color: #4ade80;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 2px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #4ade80;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.join-session-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.join-session-auth p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.join-session-auth strong {
+  color: #4ade80;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 2px;
+}
+
+.google-sign-in-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.google-sign-in-btn:hover {
+  background: #f5f5f5;
+  transform: translateY(-1px);
+}
+
+.join-session-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.error-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid #ef4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.join-session-error p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.error-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.error-actions button {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.error-actions button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 480px) {
+  .join-session-page {
+    padding: 16px;
+  }
+
+  .join-session-card h1 {
+    font-size: 20px;
+  }
+
+  .join-session-logo svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .google-sign-in-btn {
+    width: 100%;
+    padding: 14px 20px;
+  }
+
+  .error-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .error-actions button {
+    width: 100%;
+    padding: 12px 20px;
+  }
+}

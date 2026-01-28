@@ -5,9 +5,11 @@ import { usePatch } from '../contexts/PatchContext';
 import { useHistory } from '../contexts/HistoryContext';
 import { useSync } from '../contexts/SyncContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useSession } from '../contexts/SessionContext';
 import { demoDataSource } from '../services/data/DemoDataSource';
 import { midiService } from '../services/midi/MidiService';
 import { toast } from '../components/common/Toast';
+import { SessionBadge, ClientBadge, CreateSessionDialog } from '../components/session';
 import { Pedalboard } from '../components/pedalboard/Pedalboard';
 import { ModulePanel } from '../components/pedalboard/ModulePanel';
 import { ParameterModal } from '../components/parameter/ParameterModal';
@@ -45,11 +47,13 @@ function saveOnlineModePreference(enabled: boolean): void {
 
 export function Editor() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const midiDeviceIdFromUrl = searchParams.get('midi');
+  const sessionCodeFromUrl = searchParams.get('session');
   const { state: authState } = useAuth();
   const { state: deviceState, actions: deviceActions } = useDevice();
   const { state: patchState, currentPatch, actions: patchActions } = usePatch();
+  const { state: sessionState, actions: sessionActions } = useSession();
   const { actions: historyActions, canUndo, canRedo, hasUnsavedChanges } = useHistory();
   const { actions: syncActions } = useSync();
   const [selectedModule, setSelectedModule] = useState<ModuleName | null>(null);
@@ -74,6 +78,12 @@ export function Editor() {
 
   const isDemo = deviceState.status === 'demo';
   const isConnected = deviceState.status === 'connected';
+  const [showCreateSessionDialog, setShowCreateSessionDialog] = useState(false);
+
+  // Session mode helpers
+  const isServer = sessionState.mode === 'server';
+  const isClient = sessionState.mode === 'client';
+  const isInSession = isServer || isClient;
 
   const handleModuleSelect = useCallback((moduleKey: ModuleName) => {
     setSelectedModule(prev => prev === moduleKey ? null : moduleKey);
@@ -81,7 +91,7 @@ export function Editor() {
 
   // Redirect to splash if:
   // - User is not authenticated
-  // - No patches loaded AND device is disconnected/error
+  // - No patches loaded AND device is disconnected/error AND not joining/in a session
   useEffect(() => {
     // Wait for auth to finish loading
     if (authState.isLoading) return;
@@ -97,11 +107,26 @@ export function Editor() {
       return;
     }
 
+    // If we're in a session (client or server), don't redirect
+    if (isInSession) {
+      return;
+    }
+
+    // If we're trying to join a session (URL has session code), don't redirect
+    if (sessionCodeFromUrl) {
+      return;
+    }
+
+    // If we're in the process of joining a session, don't redirect
+    if (sessionState.isJoining) {
+      return;
+    }
+
     // No patches and device is disconnected/error → go to splash
     if (deviceState.status === 'disconnected' || deviceState.status === 'error') {
       navigate('/');
     }
-  }, [authState.isLoading, authState.user, deviceState.status, patchState.patches.length, navigate]);
+  }, [authState.isLoading, authState.user, deviceState.status, patchState.patches.length, navigate, isInSession, sessionCodeFromUrl, sessionState.isJoining]);
 
   // Auto-reconnect to MIDI device using URL param or stored device info
   const [isReconnecting, setIsReconnecting] = useState(false);
@@ -218,6 +243,60 @@ export function Editor() {
     return unsubscribe;
   }, [deviceState.status, deviceActions]);
 
+  // Auto-join session from URL query param
+  const sessionJoinAttemptedRef = useRef(false);
+  useEffect(() => {
+    // Only attempt if:
+    // - We have a session code in URL
+    // - User is authenticated
+    // - Not already in a session
+    // - Haven't already attempted
+    if (!sessionCodeFromUrl) return;
+    if (!authState.user) return;
+    if (sessionState.mode !== 'standalone') return;
+    if (sessionJoinAttemptedRef.current) return;
+    if (sessionState.isJoining) return;
+
+    // Capture the code so TypeScript knows it's not null inside async function
+    const code = sessionCodeFromUrl;
+    sessionJoinAttemptedRef.current = true;
+
+    async function attemptJoinSession() {
+      console.log('[Editor] Attempting auto-join session:', code);
+      try {
+        await sessionActions.joinSession(code);
+        toast.success(`Joined session ${code}`);
+      } catch (error) {
+        console.warn('[Editor] Auto-join session failed:', error);
+        toast.error('Failed to join session');
+        // Remove the session param from URL since it failed
+        setSearchParams((prev) => {
+          prev.delete('session');
+          return prev;
+        });
+      }
+    }
+
+    attemptJoinSession();
+  }, [sessionCodeFromUrl, authState.user, sessionState.mode, sessionState.isJoining, sessionActions, setSearchParams]);
+
+  // Sync URL with session state
+  // - Add session param when we join a session
+  // - Remove session param only when we explicitly leave (handled in handleLeaveSession)
+  useEffect(() => {
+    if (isClient && sessionState.sessionCode) {
+      // Add session param to URL if not already there
+      if (searchParams.get('session') !== sessionState.sessionCode) {
+        setSearchParams((prev) => {
+          prev.set('session', sessionState.sessionCode!);
+          // Remove midi param since we're in client mode
+          prev.delete('midi');
+          return prev;
+        }, { replace: true });
+      }
+    }
+  }, [isClient, sessionState.sessionCode, searchParams, setSearchParams]);
+
   useEffect(() => {
     async function loadPatches() {
       patchActions.setLoading(true, 0);
@@ -249,11 +328,21 @@ export function Editor() {
   }, [deviceState.status, isDemo, patchState.patches.length, patchActions]);
 
   const handlePatchSelect = useCallback((id: number) => {
+    // Client mode with online: Send command to server
+    if (isClient && isOnlineMode) {
+      sessionActions.sendCommand({
+        type: 'patchSelect',
+        payload: { patchId: id },
+      });
+      return;
+    }
+
+    // Client offline, Server, or Standalone mode: Update local state
     patchActions.selectPatch(id);
-    if (isOnlineMode && isConnected) {
+    if (isOnlineMode && isConnected && !isClient) {
       midiService.sendPatchChange(id);
     }
-  }, [patchActions, isOnlineMode, isConnected]);
+  }, [patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
 
   useEffect(() => {
     historyActions.setCurrentPatch(patchState.selectedPatchId);
@@ -358,29 +447,67 @@ export function Editor() {
       oldValueRef.current = newValue;
     }
 
+    // Client mode with online: Send command to server via session
+    if (isClient && isOnlineMode) {
+      sessionActions.sendCommand({
+        type: 'paramChange',
+        payload: {
+          moduleKey: selectedModule,
+          paramIndex: selectedParamIndex,
+          midiParamId: selectedParamDef.id,
+          value: newValue,
+        },
+      });
+      return;
+    }
+
+    // Client offline, Server, or Standalone mode: Update locally
     patchActions.updateParameter(selectedModule, selectedParamIndex, newValue);
 
-    if (isOnlineMode && isConnected) {
-      // Use the actual MIDI param ID from the parameter definition, not the array index
+    if (isOnlineMode && isConnected && !isClient) {
       midiService.sendParameter(selectedModule, selectedParamDef.id, newValue);
     }
-  }, [selectedModule, selectedParamIndex, selectedParamDef, patchState.selectedPatchId, patchActions, isOnlineMode, isConnected, historyActions]);
+  }, [selectedModule, selectedParamIndex, selectedParamDef, patchState.selectedPatchId, patchActions, isOnlineMode, isConnected, historyActions, isClient, sessionActions]);
 
   const handleToggleEnabled = useCallback(() => {
     if (!selectedModule || !selectedModuleState) return;
-    patchActions.toggleModuleEnabled(selectedModule);
-    if (isOnlineMode && isConnected) {
-      midiService.sendModuleToggle(selectedModule, !selectedModuleState.enabled);
+
+    const newEnabled = !selectedModuleState.enabled;
+
+    // Client mode with online: Send command to server
+    if (isClient && isOnlineMode) {
+      sessionActions.sendCommand({
+        type: 'moduleToggle',
+        payload: { moduleKey: selectedModule, enabled: newEnabled },
+      });
+      return;
     }
-  }, [selectedModule, selectedModuleState, patchActions, isOnlineMode, isConnected]);
+
+    // Client offline, Server, or Standalone mode
+    patchActions.toggleModuleEnabled(selectedModule);
+    if (isOnlineMode && isConnected && !isClient) {
+      midiService.sendModuleToggle(selectedModule, newEnabled);
+    }
+  }, [selectedModule, selectedModuleState, patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
 
   const handleModuleToggle = useCallback((moduleKey: ModuleName, enabled: boolean) => {
     if (!currentPatch) return;
+
+    // Client mode with online: Send command to server
+    if (isClient && isOnlineMode) {
+      sessionActions.sendCommand({
+        type: 'moduleToggle',
+        payload: { moduleKey, enabled },
+      });
+      return;
+    }
+
+    // Client offline, Server, or Standalone mode
     patchActions.setModuleEnabled(moduleKey, enabled);
-    if (isOnlineMode && isConnected) {
+    if (isOnlineMode && isConnected && !isClient) {
       midiService.sendModuleToggle(moduleKey, enabled);
     }
-  }, [currentPatch, patchActions, isOnlineMode, isConnected]);
+  }, [currentPatch, patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
 
   const handleTypeSelect = useCallback(() => {
     if (!selectedModule || !hasMultipleTypes(selectedModule)) return;
@@ -393,11 +520,22 @@ export function Editor() {
 
   const handleTypeChange = useCallback((typeId: number) => {
     if (!selectedModule) return;
+
+    // Client mode with online: Send command to server
+    if (isClient && isOnlineMode) {
+      sessionActions.sendCommand({
+        type: 'typeChange',
+        payload: { moduleKey: selectedModule, typeId },
+      });
+      return;
+    }
+
+    // Client offline, Server, or Standalone mode
     patchActions.updateModuleType(selectedModule, typeId);
-    if (isOnlineMode && isConnected) {
+    if (isOnlineMode && isConnected && !isClient) {
       midiService.sendModuleType(selectedModule, typeId);
     }
-  }, [selectedModule, patchActions, isOnlineMode, isConnected]);
+  }, [selectedModule, patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
 
   const handleUndo = useCallback(() => {
     const entry = historyActions.undo();
@@ -461,6 +599,20 @@ export function Editor() {
       pendingNavigationRef.current = null;
     }
   }, [historyActions, deviceActions, patchActions, navigate]);
+
+  // Handle leaving a client session
+  const handleLeaveSession = useCallback(async () => {
+    await sessionActions.leaveSession();
+    // Clear the session param from URL
+    setSearchParams((prev) => {
+      prev.delete('session');
+      return prev;
+    }, { replace: true });
+    // Clear patches since they came from the session
+    patchActions.clearPatches();
+    // Navigate to splash
+    navigate('/');
+  }, [sessionActions, setSearchParams, patchActions, navigate]);
 
   const handleCancelNavigation = useCallback(() => {
     setShowUnsavedDialog(false);
@@ -572,6 +724,19 @@ export function Editor() {
   }, [isRenaming]);
 
   const handleToggleOnlineMode = useCallback(async () => {
+    // For client mode, just toggle the state
+    if (isClient) {
+      if (isOnlineMode) {
+        setIsOnlineMode(false);
+        toast.show('Local mode - changes not sent to server');
+      } else {
+        setIsOnlineMode(true);
+        toast.show('Live mode - changes sync to server');
+      }
+      return;
+    }
+
+    // For MIDI mode, need to be connected
     if (!isConnected) return;
 
     if (isOnlineMode) {
@@ -599,13 +764,21 @@ export function Editor() {
         toast.show('Failed to enable online mode');
       }
     }
-  }, [isConnected, isOnlineMode, patchState.selectedPatchId]);
+  }, [isConnected, isOnlineMode, patchState.selectedPatchId, isClient]);
 
+  // Reset online mode when MIDI disconnects (but not for client mode)
   useEffect(() => {
-    if (!isConnected && isOnlineMode) {
+    if (!isConnected && !isClient && isOnlineMode) {
       setIsOnlineMode(false);
     }
-  }, [isConnected, isOnlineMode]);
+  }, [isConnected, isClient, isOnlineMode]);
+
+  // Auto-enable online mode when client joins a session
+  useEffect(() => {
+    if (isClient && !isOnlineMode) {
+      setIsOnlineMode(true);
+    }
+  }, [isClient]); // Only run when isClient changes, not isOnlineMode
 
   // Receive all patches from pedal (overwrite local)
   const handleReceiveFromPedal = useCallback(async () => {
@@ -702,37 +875,59 @@ export function Editor() {
         <div className="flex md:hidden items-center justify-between">
           <div className="flex items-center gap-2">
             <img src="/zoomlogo.png" alt="ZOOM" className="h-4 opacity-80" />
-            {/* MIDI Status LED */}
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-800/50 rounded-lg">
-              <div
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  isConnected
-                    ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)]'
-                    : isReconnecting
+            {/* Live Mode Toggle - for connected MIDI or client mode */}
+            {(isConnected || isClient) ? (
+              <button
+                onClick={handleToggleOnlineMode}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors ${
+                  isOnlineMode
+                    ? 'bg-green-500/20 active:bg-green-500/30'
+                    : 'bg-neutral-800/50 active:bg-neutral-700/50'
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    isOnlineMode
+                      ? 'bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.6)] animate-pulse'
+                      : 'bg-neutral-600'
+                  }`}
+                />
+                <span className={`text-[10px] font-medium ${
+                  isOnlineMode ? 'text-green-400' : 'text-neutral-500'
+                }`}>
+                  {isOnlineMode
+                    ? 'LIVE'
+                    : (isClient ? 'LOCAL' : 'OFFLINE')
+                  }
+                </span>
+              </button>
+            ) : (
+              /* Static status for demo/disconnected/reconnecting */
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-neutral-800/50 rounded-lg">
+                <div
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    isReconnecting
                       ? 'bg-orange-500 shadow-[0_0_6px_rgba(249,115,22,0.6)] animate-pulse'
                       : isDemo
                         ? 'bg-purple-500 shadow-[0_0_6px_rgba(168,85,247,0.6)]'
                         : 'bg-neutral-600'
-                }`}
-              />
-              <span className={`text-[10px] font-medium ${
-                isConnected
-                  ? 'text-green-400'
-                  : isReconnecting
+                  }`}
+                />
+                <span className={`text-[10px] font-medium ${
+                  isReconnecting
                     ? 'text-orange-400'
                     : isDemo
                       ? 'text-purple-400'
                       : 'text-neutral-500'
-              }`}>
-                {isConnected
-                  ? 'MIDI'
-                  : isReconnecting
+                }`}>
+                  {isReconnecting
                     ? 'CONNECTING'
                     : isDemo
                       ? 'DEMO'
                       : 'OFFLINE'}
-              </span>
-            </div>
+                </span>
+              </div>
+            )}
             {/* Unsaved indicator */}
             {hasUnsavedChanges && (
               <span className="w-2 h-2 rounded-full bg-amber-500" title="Unsaved changes" />
@@ -834,16 +1029,47 @@ export function Editor() {
                   Unsaved
                 </span>
               )}
+
+              {/* Session Badges */}
+              {isServer && sessionState.sessionCode && (
+                <SessionBadge
+                  code={sessionState.sessionCode}
+                  clientCount={sessionState.clients.length}
+                  onEndSession={sessionActions.endSession}
+                />
+              )}
+              {isClient && sessionState.sessionMeta && sessionState.sessionCode && (
+                <ClientBadge
+                  hostName={sessionState.sessionMeta.hostDisplayName}
+                  sessionCode={sessionState.sessionCode}
+                  onLeave={handleLeaveSession}
+                />
+              )}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Online Mode Toggle */}
-            {isConnected && (
+            {/* Share Session Button (when connected but not in session) */}
+            {isConnected && !isInSession && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCreateSessionDialog(true)}
+                className="text-green-400 hover:bg-green-500/10"
+              >
+                <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share
+              </Button>
+            )}
+
+            {/* Online Mode Toggle - for MIDI connected OR client mode */}
+            {(isConnected || isClient) && (
               <ToggleButton
                 isOn={isOnlineMode}
-                onLabel="LIVE"
-                offLabel="OFFLINE"
+                onLabel={isClient ? "LIVE" : "LIVE"}
+                offLabel={isClient ? "LOCAL" : "OFFLINE"}
                 onClick={handleToggleOnlineMode}
                 size="sm"
               />
@@ -875,8 +1101,8 @@ export function Editor() {
               </IconButton>
             </div>
 
-            {/* Sync Menu (only when connected) */}
-            {isConnected && (
+            {/* Sync Menu (only when MIDI connected and not client) */}
+            {isConnected && !isClient && (
               <div className="relative">
                 <Button
                   onClick={() => setShowSyncMenu(!showSyncMenu)}
@@ -1173,8 +1399,8 @@ export function Editor() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
-              {/* Online Mode */}
-              {isConnected && (
+              {/* Online Mode - for MIDI connected OR client mode */}
+              {(isConnected || isClient) && (
                 <button
                   onClick={() => {
                     handleToggleOnlineMode();
@@ -1185,12 +1411,15 @@ export function Editor() {
                   }`}
                 >
                   <span className={`w-3 h-3 rounded-full ${isOnlineMode ? 'bg-green-500 animate-pulse' : 'bg-neutral-600'}`} />
-                  {isOnlineMode ? 'Live Mode ON' : 'Live Mode OFF'}
+                  {isOnlineMode
+                    ? (isClient ? 'Live Mode ON (Remote)' : 'Live Mode ON')
+                    : (isClient ? 'Local Mode (Changes not sent)' : 'Live Mode OFF')
+                  }
                 </button>
               )}
 
-              {/* Sync options */}
-              {isConnected && (
+              {/* Sync options - only for MIDI connected, not client */}
+              {isConnected && !isClient && (
                 <>
                   <button
                     onClick={() => {
@@ -1412,6 +1641,18 @@ export function Editor() {
         progress={syncProgress}
         onStartSend={handleStartBulkSend}
         onCancel={handleCancelBulkSend}
+      />
+
+      {/* Create Session Dialog */}
+      <CreateSessionDialog
+        isOpen={showCreateSessionDialog}
+        isCreating={sessionState.isCreating}
+        sessionCode={sessionState.sessionCode}
+        error={sessionState.error}
+        onClose={() => setShowCreateSessionDialog(false)}
+        onCreate={async () => {
+          await sessionActions.createSession();
+        }}
       />
     </div>
   );

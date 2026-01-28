@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Custom breakpoints for mobile-first design */
+@theme {
+  --breakpoint-xs: 480px;
+}
+
 #root {
   min-height: 100vh;
 }
