@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="zoom-g9.2tt-web/public/app-logo.png" alt="Zoom G9.2tt Platform" width="120"/>
+</p>
+
 # Zoom G9.2tt Platform
 
 Modern web-based editor for the Zoom G9.2tt guitar multi-effects pedal, built on complete reverse engineering of the MIDI SysEx protocol.

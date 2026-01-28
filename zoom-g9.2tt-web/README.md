@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/app-logo.png" alt="Zoom G9.2tt Editor" width="120"/>
+</p>
+
 # Zoom G9.2tt Web Editor
 
 A modern, browser-based patch editor for the Zoom G9.2tt guitar multi-effects pedal. Built with React, TypeScript, and Web MIDI API.
