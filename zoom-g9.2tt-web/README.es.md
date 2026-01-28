@@ -4,22 +4,32 @@ Editor de patches moderno basado en navegador para el pedal multiefectos Zoom G9
 
 ## Capturas de Pantalla
 
-<p align="center">
-  <img src="public/splash.png" alt="Pantalla de Inicio" width="280"/>
-  <img src="public/demo.png" alt="Editor en Modo Demo" width="280"/>
-  <img src="public/mobile.png" alt="Interfaz Movil" width="180"/>
-</p>
+### Pantalla de Inicio
+Centro de conexion con seleccion de dispositivo, modo demo y autenticacion con Google.
 
 <p align="center">
-  <em>Izquierda: Pantalla de inicio con opciones de conexion | Centro: Editor en modo Demo | Derecha: Vista responsive movil</em>
+  <img src="public/splash.png" alt="Pantalla de Inicio" width="500"/>
 </p>
+
+### Sesion Colaborativa
+Controla tu pedal remotamente desde cualquier dispositivo. El servidor (con MIDI) comparte un codigo de 6 caracteres, los clientes se unen y controlan parametros en tiempo real.
 
 <p align="center">
   <img src="public/session.png" alt="Sesion Colaborativa" width="700"/>
 </p>
 
+### Editor - Modo Demo
+Pedalera virtual con los 10 modulos de efectos. Haz click en cualquier modulo para editar parametros, activar/desactivar efectos y cambiar tipos de efecto.
+
 <p align="center">
-  <em>Sesion colaborativa con modo Servidor/Cliente para control remoto</em>
+  <img src="public/demo.png" alt="Editor Modo Demo" width="600"/>
+</p>
+
+### Interfaz Movil
+Diseno completamente responsive para telefonos y tablets. Funcionalidad completa en movimiento.
+
+<p align="center">
+  <img src="public/mobile.png" alt="Interfaz Movil" width="300"/>
 </p>
 
 ---

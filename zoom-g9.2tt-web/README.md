@@ -8,22 +8,32 @@ A modern, browser-based patch editor for the Zoom G9.2tt guitar multi-effects pe
 
 ## Screenshots
 
-<p align="center">
-  <img src="public/splash.png" alt="Splash Screen" width="280"/>
-  <img src="public/demo.png" alt="Editor Demo Mode" width="280"/>
-  <img src="public/mobile.png" alt="Mobile Interface" width="180"/>
-</p>
+### Splash Screen
+Connection hub with device selection, demo mode, and Google authentication.
 
 <p align="center">
-  <em>Left: Splash screen with connection options | Center: Editor in Demo mode | Right: Mobile responsive view</em>
+  <img src="public/splash.png" alt="Splash Screen" width="500"/>
 </p>
+
+### Collaborative Session
+Remote control your pedal from any device. The server (with MIDI) shares a 6-character code, clients join and control parameters in real-time.
 
 <p align="center">
   <img src="public/session.png" alt="Collaborative Session" width="700"/>
 </p>
 
+### Editor - Demo Mode
+Virtual pedalboard with all 10 effect modules. Click any module to edit parameters, toggle effects on/off, and change effect types.
+
 <p align="center">
-  <em>Collaborative session with Server/Client mode for remote control</em>
+  <img src="public/demo.png" alt="Editor Demo Mode" width="600"/>
+</p>
+
+### Mobile Interface
+Fully responsive design for phones and tablets. Complete functionality on the go.
+
+<p align="center">
+  <img src="public/mobile.png" alt="Mobile Interface" width="300"/>
 </p>
 
 ---

@@ -22,14 +22,32 @@ The original G9ED software (Windows XP, .NET 2.0) is obsolete and incompatible w
 
 ## Screenshots
 
-<p align="center">
-  <img src="zoom-g9.2tt-web/public/splash.png" alt="Splash Screen" width="280"/>
-  <img src="zoom-g9.2tt-web/public/demo.png" alt="Editor Demo Mode" width="280"/>
-  <img src="zoom-g9.2tt-web/public/mobile.png" alt="Mobile Interface" width="180"/>
-</p>
+### Splash Screen
+Connection hub with device selection, demo mode, and authentication.
 
 <p align="center">
-  <img src="zoom-g9.2tt-web/public/session.png" alt="Collaborative Session" width="600"/>
+  <img src="zoom-g9.2tt-web/public/splash.png" alt="Splash Screen" width="500"/>
+</p>
+
+### Collaborative Session
+Remote control from any device via 6-character session code.
+
+<p align="center">
+  <img src="zoom-g9.2tt-web/public/session.png" alt="Collaborative Session" width="700"/>
+</p>
+
+### Editor
+Virtual pedalboard with all 10 effect modules and real-time control.
+
+<p align="center">
+  <img src="zoom-g9.2tt-web/public/demo.png" alt="Editor" width="600"/>
+</p>
+
+### Mobile
+Fully responsive design for phones and tablets.
+
+<p align="center">
+  <img src="zoom-g9.2tt-web/public/mobile.png" alt="Mobile Interface" width="300"/>
 </p>
 
 ---
