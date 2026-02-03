@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import type { ModuleName, Patch } from '../../types/patch';
 import { SIGNAL_CHAIN_ORDER } from '../../data/effectTypes';
-import { ModuleMini } from './ModuleMini';
+import { getModuleComponents } from '../modules/registry';
 
 interface PedalboardProps {
   patch: Patch;
@@ -45,47 +45,56 @@ export function Pedalboard({ patch, onModuleSelect, onModuleToggle, selectedModu
       >
         {/* Mobile: Flex wrap layout */}
         <div className="flex lg:hidden flex-wrap justify-center gap-2">
-          {SIGNAL_CHAIN_ORDER.map((moduleKey) => (
-            <div key={moduleKey} className="w-[calc(33.333%-8px)] min-w-[80px] max-w-[100px]">
-              <ModuleMini
-                moduleKey={moduleKey}
-                module={patch.modules[moduleKey]}
-                isSelected={currentSelected === moduleKey}
-                onSelect={() => handleModuleSelect(moduleKey)}
-                onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
-                compact={true}
-              />
-            </div>
-          ))}
+          {SIGNAL_CHAIN_ORDER.map((moduleKey) => {
+            const { Mini } = getModuleComponents(moduleKey);
+            return (
+              <div key={moduleKey} className="w-[calc(33.333%-8px)] min-w-[80px] max-w-[100px]">
+                <Mini
+                  moduleKey={moduleKey}
+                  module={patch.modules[moduleKey]}
+                  isSelected={currentSelected === moduleKey}
+                  onSelect={() => handleModuleSelect(moduleKey)}
+                  onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
+                  compact={true}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/* Desktop: Grid layout - 2 rows of 5, full width */}
         <div className="hidden lg:block">
           {/* First row: COMP, WAH, ZNR, AMP, CAB */}
           <div className="grid grid-cols-5 gap-4 xl:gap-6 mb-4 xl:mb-6">
-            {SIGNAL_CHAIN_ORDER.slice(0, 5).map((moduleKey) => (
-              <ModuleMini
-                key={moduleKey}
-                moduleKey={moduleKey}
-                module={patch.modules[moduleKey]}
-                isSelected={currentSelected === moduleKey}
-                onSelect={() => handleModuleSelect(moduleKey)}
-                onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
-              />
-            ))}
+            {SIGNAL_CHAIN_ORDER.slice(0, 5).map((moduleKey) => {
+              const { Mini } = getModuleComponents(moduleKey);
+              return (
+                <Mini
+                  key={moduleKey}
+                  moduleKey={moduleKey}
+                  module={patch.modules[moduleKey]}
+                  isSelected={currentSelected === moduleKey}
+                  onSelect={() => handleModuleSelect(moduleKey)}
+                  onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
+                />
+              );
+            })}
           </div>
           {/* Second row: EQ, MOD, DLY, REV, EXT */}
           <div className="grid grid-cols-5 gap-4 xl:gap-6">
-            {SIGNAL_CHAIN_ORDER.slice(5, 10).map((moduleKey) => (
-              <ModuleMini
-                key={moduleKey}
-                moduleKey={moduleKey}
-                module={patch.modules[moduleKey]}
-                isSelected={currentSelected === moduleKey}
-                onSelect={() => handleModuleSelect(moduleKey)}
-                onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
-              />
-            ))}
+            {SIGNAL_CHAIN_ORDER.slice(5, 10).map((moduleKey) => {
+              const { Mini } = getModuleComponents(moduleKey);
+              return (
+                <Mini
+                  key={moduleKey}
+                  moduleKey={moduleKey}
+                  module={patch.modules[moduleKey]}
+                  isSelected={currentSelected === moduleKey}
+                  onSelect={() => handleModuleSelect(moduleKey)}
+                  onToggle={(enabled) => onModuleToggle?.(moduleKey, enabled)}
+                />
+              );
+            })}
           </div>
         </div>
       </div>

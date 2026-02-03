@@ -8,10 +8,10 @@
       "tmuxSessionId": "orka-efea708a-bba0-43c3-8c9b-f2549b4f06a8",
       "status": "active",
       "createdAt": "2026-01-23T16:55:18.806Z",
-      "lastActivity": "2026-01-27T17:48:41.685Z",
+      "lastActivity": "2026-02-02T20:11:00.165Z",
       "main": {
         "claudeSessionId": "64c87491-5da7-4b50-aad4-67890e0e10a4",
-        "tmuxPaneId": "%2",
+        "tmuxPaneId": "%10",
         "status": "active"
       },
       "forks": [
@@ -48,9 +48,9 @@
           "createdAt": "2026-01-27T17:43:16.980Z"
         }
       ],
-      "ttydPort": 4445,
-      "ttydPid": 4913
+      "ttydPort": 4448,
+      "ttydPid": 54682
     }
   ],
-  "lastUpdated": "2026-01-27T17:48:41.687Z"
+  "lastUpdated": "2026-02-03T00:32:29.619Z"
 }

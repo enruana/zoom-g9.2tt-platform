@@ -11,7 +11,7 @@ import { midiService } from '../services/midi/MidiService';
 import { toast } from '../components/common/Toast';
 import { SessionBadge, ClientBadge, CreateSessionDialog } from '../components/session';
 import { Pedalboard } from '../components/pedalboard/Pedalboard';
-import { ModulePanel } from '../components/pedalboard/ModulePanel';
+import { getModuleComponents } from '../components/modules/registry';
 import { ParameterModal } from '../components/parameter/ParameterModal';
 import { TypeSelector } from '../components/parameter/TypeSelector';
 import { SaveConfirmDialog } from '../components/dialogs/SaveConfirmDialog';
@@ -1695,16 +1695,19 @@ export function Editor() {
       `}</style>
 
       {/* Module Panel */}
-      {selectedModule && selectedModuleState && (
-        <ModulePanel
-          moduleKey={selectedModule}
-          module={selectedModuleState}
-          onClose={handleClosePanel}
-          onParameterClick={handleParameterClick}
-          onToggleEnabled={handleToggleEnabled}
-          onTypeSelect={handleTypeSelect}
-        />
-      )}
+      {selectedModule && selectedModuleState && (() => {
+        const { Panel } = getModuleComponents(selectedModule);
+        return (
+          <Panel
+            moduleKey={selectedModule}
+            module={selectedModuleState}
+            onClose={handleClosePanel}
+            onParameterClick={handleParameterClick}
+            onToggleEnabled={handleToggleEnabled}
+            onTypeSelect={handleTypeSelect}
+          />
+        );
+      })()}
 
       {/* Parameter Modal */}
       {selectedModule && selectedParamDef && (
