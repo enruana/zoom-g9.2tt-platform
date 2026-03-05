@@ -47,8 +47,10 @@ export function ParameterModal({
     modalRef.current?.focus();
   }, []);
 
-  // Determine how many digits to show based on max value
-  const digitCount = Math.max(String(parameter.max).length, String(parameter.min).length);
+  // Determine how many digits to show based on display range (with offset)
+  const displayMin = parameter.min + (parameter.displayOffset ?? 0);
+  const displayMax = parameter.max + (parameter.displayOffset ?? 0);
+  const digitCount = Math.max(String(displayMax).length, String(displayMin).length);
 
   return (
     <div
@@ -88,7 +90,7 @@ export function ParameterModal({
         {/* 7-Segment Value Display */}
         <div className="flex justify-center mb-4">
           <SevenSegment
-            value={value}
+            value={value + (parameter.displayOffset ?? 0)}
             digits={digitCount}
             size="lg"
             color={accentColor}
@@ -127,8 +129,8 @@ export function ParameterModal({
 
         {/* Range Info */}
         <div className="flex justify-between text-xs text-gray-500 mb-2">
-          <span>Min: {parameter.min}</span>
-          <span>Max: {parameter.max}</span>
+          <span>Min: {parameter.min + (parameter.displayOffset ?? 0)}</span>
+          <span>Max: {parameter.max + (parameter.displayOffset ?? 0)}</span>
         </div>
 
         {/* Hint */}

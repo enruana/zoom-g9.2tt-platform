@@ -1,0 +1,6067 @@
+{
+  "modules": [
+    {
+      "name": "TOP",
+      "types": [
+        {
+          "name": "Volume",
+          "parameters": [
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 80,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CMP",
+      "types": [
+        {
+          "name": "Compressor",
+          "parameters": [
+            {
+              "name": "Sense",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Attack",
+              "valType": "RefTbl",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "Fast",
+                "Slow"
+              ]
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "RackComp",
+          "parameters": [
+            {
+              "name": "Threshold",
+              "valType": "",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Ratio",
+              "valType": "",
+              "init": 5,
+              "max": 9,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Attack",
+              "valType": "",
+              "init": 6,
+              "max": 9,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Limiter",
+          "parameters": [
+            {
+              "name": "Threshold",
+              "valType": "",
+              "init": 10,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Ratio",
+              "valType": "",
+              "init": 6,
+              "max": 9,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Release",
+              "valType": "",
+              "init": 9,
+              "max": 9,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WAH",
+      "types": [
+        {
+          "name": "AutoWah",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Sense",
+              "valType": "RefTbl",
+              "init": 17,
+              "max": 19,
+              "rtm_max": 19,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "-10",
+                "-9",
+                "-8",
+                "-7",
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-2",
+                "-1",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+              ]
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "AutoResonance",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Sense",
+              "valType": "RefTbl",
+              "init": 15,
+              "max": 19,
+              "rtm_max": 19,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "-10",
+                "-9",
+                "-8",
+                "-7",
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-2",
+                "-1",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+              ]
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Booster",
+          "parameters": [
+            {
+              "name": "Range",
+              "valType": "",
+              "init": 2,
+              "max": 4,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Tremolo",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 40,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Wave",
+              "valType": "RefTbl",
+              "init": 15,
+              "max": 29,
+              "rtm_max": 29,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "UP0",
+                "UP1",
+                "UP2",
+                "UP3",
+                "UP4",
+                "UP5",
+                "UP6",
+                "UP7",
+                "UP8",
+                "UP9",
+                "DWN0",
+                "DWN1",
+                "DWN2",
+                "DWN3",
+                "DWN4",
+                "DWN5",
+                "DWN6",
+                "DWN7",
+                "DWN8",
+                "DWN9",
+                "TRI0",
+                "TRI1",
+                "TRI2",
+                "TRI3",
+                "TRI4",
+                "TRI5",
+                "TRI6",
+                "TRI7",
+                "TRI8",
+                "TRI9"
+              ]
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Phaser",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 15,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Color",
+              "valType": "",
+              "init": 0,
+              "max": 3,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "FixedPhaser",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 15,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 49,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Color",
+              "valType": "",
+              "init": 0,
+              "max": 3,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "RingModulator",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "SlowAttack",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Time",
+              "valType": "",
+              "init": 9,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Curve",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PedalVox",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 14,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "DryMix",
+              "valType": "",
+              "init": 0,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 34,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PedalCryBaby",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 14,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "DryMix",
+              "valType": "",
+              "init": 0,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 34,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "MultiWah",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 29,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Curve",
+              "valType": "",
+              "init": 4,
+              "max": 9,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PedalResonanceFilter",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 29,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 7,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Octave",
+          "parameters": [
+            {
+              "name": "OctaveLevel",
+              "valType": "LvGain",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "DryLevel",
+              "valType": "LvGain",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "X-Wah",
+          "parameters": [
+            {
+              "name": "Position",
+              "valType": "WahRouting",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 14,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "X-Fade",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 34,
+              "max": 49,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "X-Phaser",
+          "parameters": [
+            {
+              "name": "Color",
+              "valType": "RefTbl",
+              "init": 0,
+              "max": 7,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "1,Before",
+                "2,Before",
+                "3,Before",
+                "4,Before",
+                "1,After",
+                "2,After",
+                "3,After",
+                "4,After"
+              ]
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 15,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "X-Fade",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "X-Vibe",
+          "parameters": [
+            {
+              "name": "PHA Rate",
+              "valType": "RefView",
+              "init": 15,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "TRM Rate",
+              "valType": "RefView",
+              "init": 15,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "X-Fade",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "LvGain",
+              "init": 39,
+              "max": 49,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Oscillator",
+          "parameters": [
+            {
+              "name": "Frequency",
+              "valType": "note RefView",
+              "init": 62,
+              "max": 62,
+              "rtm_max": 60,
+              "dispMax": 60,
+              "offset": 33,
+              "views": [
+                "Auto,Before",
+                "Auto,After"
+              ]
+            },
+            {
+              "name": "Portament",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Vibrato",
+              "valType": "",
+              "init": 0,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 0,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EXT",
+      "types": [
+        {
+          "name": "EXT",
+          "parameters": [
+            {
+              "name": "Send",
+              "valType": "",
+              "init": 80,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Return",
+              "valType": "",
+              "init": 80,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Dry",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ZNR",
+      "types": [
+        {
+          "name": "ZNR",
+          "parameters": [
+            {
+              "name": "Threshold",
+              "valType": "",
+              "init": 9,
+              "max": 15,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "NoiseGate",
+          "parameters": [
+            {
+              "name": "Threshold",
+              "valType": "",
+              "init": 9,
+              "max": 15,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "DirtyGate",
+          "parameters": [
+            {
+              "name": "Threshold",
+              "valType": "",
+              "init": 9,
+              "max": 15,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AMP",
+      "types": [
+        {
+          "name": "Fender Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "VOX Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "JC Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "HiWatt Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "UK Blues",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "US Blues",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Tweed Bass",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "BG Crunch",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "VOX Crunch",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z Combo",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "MS #1959",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "MS Crunch",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "MS Drive",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Rect Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 50,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Rect Vintage",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Rect Modern",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "HK Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 50,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "HK Crunch",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "HK Drive",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "DZ Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 50,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "DZ Crunch",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "DZ Drive",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "ENGL Drive",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PV Drive",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z Stack",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Over Drive",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "TS808",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Centaur",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Guv'nor",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "RAT",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "DS-1",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "dist+",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "HotBox",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "FuzzFace",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "BigMuff",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "MetalZone",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "TS+F_Cmb",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "SD+M_Stk",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "FZ+M_Stk",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z OD",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "ExtremeDS",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "DigiFuzz",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z Clean",
+          "parameters": [
+            {
+              "name": "Gain",
+              "valType": "",
+              "init": 60,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 15,
+              "max": 30,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Aco.Sim",
+          "parameters": [
+            {
+              "name": "Top",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Body",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Level",
+              "valType": "",
+              "init": 79,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EQ",
+      "types": []
+    },
+    {
+      "name": "CAB",
+      "types": []
+    },
+    {
+      "name": "MOD",
+      "types": [
+        {
+          "name": "Chorus",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "",
+              "init": 24,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 7,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "StereoChorus",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "",
+              "init": 29,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 7,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Ensemble",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "",
+              "init": 29,
+              "max": 49,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 7,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "ModDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 239,
+              "max": 2014,
+              "rtm_max": 0,
+              "dispMax": 1999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 15,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "",
+              "init": 24,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Flanger",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 15,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 7,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 14,
+              "max": 20,
+              "rtm_max": 20,
+              "dispMax": 0,
+              "offset": -10,
+              "views": []
+            },
+            {
+              "name": "Manual",
+              "valType": "LvGain",
+              "init": 8,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PitchShifter",
+          "parameters": [
+            {
+              "name": "Shift",
+              "valType": "RefTbl",
+              "init": 24,
+              "max": 25,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 8,
+              "views": [
+                "-12",
+                "-11",
+                "-10",
+                "-9",
+                "-8",
+                "-7",
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-2",
+                "-1",
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "24"
+              ]
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Fine",
+              "valType": "",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": -25,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PedalPitch",
+          "parameters": [
+            {
+              "name": "Color",
+              "valType": "",
+              "init": 4,
+              "max": 7,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Mode",
+              "valType": "RefTbl",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "Up",
+                "Down"
+              ]
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "PedalPosition",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Vibrato",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 30,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 7,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 36,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Step",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 30,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Shape",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Delay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 239,
+              "max": 2014,
+              "rtm_max": 0,
+              "dispMax": 1999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 9,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "TapeEcho",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 239,
+              "max": 2014,
+              "rtm_max": 0,
+              "dispMax": 1999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 15,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "DynamicDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 359,
+              "max": 2014,
+              "rtm_max": 0,
+              "dispMax": 1999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8"
+              ]
+            },
+            {
+              "name": "Amount",
+              "valType": "LvGain",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 15,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Sense",
+              "valType": "RefTbl",
+              "init": 5,
+              "max": 19,
+              "rtm_max": 19,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "-10",
+                "-9",
+                "-8",
+                "-7",
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-2",
+                "-1",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "DynamicFlanger",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 12,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 17,
+              "max": 20,
+              "rtm_max": 20,
+              "dispMax": 0,
+              "offset": -10,
+              "views": []
+            },
+            {
+              "name": "Sense",
+              "valType": "RefTbl",
+              "init": 16,
+              "max": 19,
+              "rtm_max": 19,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "-10",
+                "-9",
+                "-8",
+                "-7",
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-2",
+                "-1",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MonoPitch",
+          "parameters": [
+            {
+              "name": "Shift",
+              "valType": "RefTbl",
+              "init": 20,
+              "max": 26,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 10,
+              "views": [
+                "-24",
+                "-12",
+                "-11",
+                "-10",
+                "-9",
+                "-8",
+                "-7",
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-2",
+                "-1",
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "24"
+              ]
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Fine",
+              "valType": "",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": -25,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "HarmonizedPitchShifter",
+          "parameters": [
+            {
+              "name": "Scale",
+              "valType": "RefTbl",
+              "init": 5,
+              "max": 9,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-m",
+                "m",
+                "3",
+                "4",
+                "5",
+                "6"
+              ]
+            },
+            {
+              "name": "Key",
+              "valType": "RefTbl",
+              "init": 0,
+              "max": 11,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "C",
+                "C#",
+                "D",
+                "D#",
+                "E",
+                "F",
+                "F#",
+                "G",
+                "G#",
+                "A",
+                "A#",
+                "B"
+              ]
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 35,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PedalMonoPitch",
+          "parameters": [
+            {
+              "name": "Color",
+              "valType": "",
+              "init": 4,
+              "max": 7,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Mode",
+              "valType": "RefTbl",
+              "init": 0,
+              "max": 1,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "Up",
+                "Down"
+              ]
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "PedalPosition",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Cry",
+          "parameters": [
+            {
+              "name": "Range",
+              "valType": "",
+              "init": 4,
+              "max": 9,
+              "rtm_max": 9,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Sense",
+              "valType": "RefTbl",
+              "init": 16,
+              "max": 19,
+              "rtm_max": 19,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "-10",
+                "-9",
+                "-8",
+                "-7",
+                "-6",
+                "-5",
+                "-4",
+                "-3",
+                "-2",
+                "-1",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10"
+              ]
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 50,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "ReverseDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 350,
+              "max": 1001,
+              "rtm_max": 0,
+              "dispMax": 990,
+              "offset": 10,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "BendChorus",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": -25,
+              "views": []
+            },
+            {
+              "name": "Attack",
+              "valType": "",
+              "init": 0,
+              "max": 9,
+              "rtm_max": 9,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Release",
+              "valType": "",
+              "init": 9,
+              "max": 9,
+              "rtm_max": 9,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "CombFilter",
+          "parameters": [
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 0,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Resonance",
+              "valType": "",
+              "init": 18,
+              "max": 20,
+              "rtm_max": 20,
+              "dispMax": 0,
+              "offset": -10,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 10,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 50,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Air",
+          "parameters": [
+            {
+              "name": "Size",
+              "valType": "",
+              "init": 9,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Reflex",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Echo",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time10",
+              "init": 35,
+              "max": 99,
+              "rtm_max": 99,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 9,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "X-Flanger",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 15,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 7,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "X-Fade",
+              "valType": "LvGain",
+              "init": 50,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Manual",
+              "valType": "LvGain",
+              "init": 8,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "X-Step",
+          "parameters": [
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 30,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "X-Fade",
+              "valType": "LvGain",
+              "init": 50,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Shape",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Step",
+          "parameters": [
+            {
+              "name": "Frequency",
+              "valType": "",
+              "init": 19,
+              "max": 49,
+              "rtm_max": 49,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Shape",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Pitch",
+          "parameters": [
+            {
+              "name": "Color",
+              "valType": "",
+              "init": 0,
+              "max": 7,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "PedalPosition V",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "PedalPosition H",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-MonoPitch",
+          "parameters": [
+            {
+              "name": "Color",
+              "valType": "",
+              "init": 0,
+              "max": 7,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "PedalPosition V",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "PedalPosition H",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Talking",
+          "parameters": [
+            {
+              "name": "Variation",
+              "valType": "",
+              "init": 4,
+              "max": 4,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Formant V",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Formant H",
+              "valType": "",
+              "init": 0,
+              "max": 100,
+              "rtm_max": 100,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DLY",
+      "types": [
+        {
+          "name": "Delay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 359,
+              "max": 5022,
+              "rtm_max": 0,
+              "dispMax": 4999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 10,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PingPongDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 359,
+              "max": 5022,
+              "rtm_max": 0,
+              "dispMax": 4999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 10,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Echo",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 359,
+              "max": 5022,
+              "rtm_max": 0,
+              "dispMax": 4999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 10,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PingPongEcho",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 359,
+              "max": 5022,
+              "rtm_max": 0,
+              "dispMax": 4999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 10,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "AnalogDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 599,
+              "max": 5022,
+              "rtm_max": 0,
+              "dispMax": 4999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 15,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 35,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "ReverseDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 350,
+              "max": 2505,
+              "rtm_max": 0,
+              "dispMax": 2490,
+              "offset": 10,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Balance",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Air",
+          "parameters": [
+            {
+              "name": "Size",
+              "valType": "",
+              "init": 9,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Reflex",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 20,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "REV",
+      "types": [
+        {
+          "name": "Hall",
+          "parameters": [
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 9,
+              "max": 29,
+              "rtm_max": 29,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "PreDelay",
+              "valType": "",
+              "init": 44,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Room",
+          "parameters": [
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 9,
+              "max": 29,
+              "rtm_max": 29,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "PreDelay",
+              "valType": "",
+              "init": 4,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Spring",
+          "parameters": [
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 19,
+              "max": 29,
+              "rtm_max": 29,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "PreDelay",
+              "valType": "",
+              "init": 0,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 4,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Arena",
+          "parameters": [
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 14,
+              "max": 29,
+              "rtm_max": 29,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "PreDelay",
+              "valType": "",
+              "init": 89,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "TiledRoom",
+          "parameters": [
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 19,
+              "max": 29,
+              "rtm_max": 29,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "PreDelay",
+              "valType": "",
+              "init": 9,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 8,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 35,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "ModernSpring",
+          "parameters": [
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 19,
+              "max": 29,
+              "rtm_max": 29,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "PreDelay",
+              "valType": "",
+              "init": 0,
+              "max": 99,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 7,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "EarlyReflection",
+          "parameters": [
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 9,
+              "max": 29,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Shape",
+              "valType": "",
+              "init": 20,
+              "max": 20,
+              "rtm_max": 20,
+              "dispMax": 0,
+              "offset": -10,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 6,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "MultiTapDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView",
+              "init": 3008,
+              "max": 3018,
+              "rtm_max": 0,
+              "dispMax": 2999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12"
+              ]
+            },
+            {
+              "name": "Pattern",
+              "valType": "",
+              "init": 1,
+              "max": 7,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Tone",
+              "valType": "",
+              "init": 10,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 10,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PanningDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView",
+              "init": 34,
+              "max": 3018,
+              "rtm_max": 0,
+              "dispMax": 2999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 6,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Pan",
+              "valType": "RefTbl",
+              "init": 5,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "L50",
+                "L48",
+                "L46",
+                "L44",
+                "L42",
+                "L40",
+                "L38",
+                "L36",
+                "L34",
+                "L32",
+                "L30",
+                "L28",
+                "L26",
+                "L24",
+                "L22",
+                "L20",
+                "L18",
+                "L16",
+                "L14",
+                "L12",
+                "L10",
+                "L8",
+                "L6",
+                "L4",
+                "L2",
+                "0",
+                "R2",
+                "R4",
+                "R6",
+                "R8",
+                "R10",
+                "R12",
+                "R14",
+                "R16",
+                "R18",
+                "R20",
+                "R22",
+                "R24",
+                "R26",
+                "R28",
+                "R30",
+                "R32",
+                "R34",
+                "R36",
+                "R38",
+                "R40",
+                "R42",
+                "R44",
+                "R46",
+                "R48",
+                "R50"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "PingPongDelay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 3008,
+              "max": 3018,
+              "rtm_max": 0,
+              "dispMax": 2999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 5,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 35,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "PingPongEcho",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 3008,
+              "max": 3018,
+              "rtm_max": 0,
+              "dispMax": 2999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 5,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "HiDamp",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 35,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "AutoPan",
+          "parameters": [
+            {
+              "name": "Width",
+              "valType": "RefTbl",
+              "init": 40,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "L50",
+                "L48",
+                "L46",
+                "L44",
+                "L42",
+                "L40",
+                "L38",
+                "L36",
+                "L34",
+                "L32",
+                "L30",
+                "L28",
+                "L26",
+                "L24",
+                "L22",
+                "L20",
+                "L18",
+                "L16",
+                "L14",
+                "L12",
+                "L10",
+                "L8",
+                "L6",
+                "L4",
+                "L2",
+                "0",
+                "R2",
+                "R4",
+                "R6",
+                "R8",
+                "R10",
+                "R12",
+                "R14",
+                "R16",
+                "R18",
+                "R20",
+                "R22",
+                "R24",
+                "R26",
+                "R28",
+                "R30",
+                "R32",
+                "R34",
+                "R36",
+                "R38",
+                "R40",
+                "R42",
+                "R44",
+                "R46",
+                "R48",
+                "R50"
+              ]
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 48,
+              "max": 78,
+              "rtm_max": 50,
+              "dispMax": 50,
+              "offset": 0,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Depth",
+              "valType": "",
+              "init": 5,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Wave",
+              "valType": "",
+              "init": 1,
+              "max": 10,
+              "rtm_max": 10,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Delay",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 3008,
+              "max": 3018,
+              "rtm_max": 0,
+              "dispMax": 2999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12"
+              ]
+            },
+            {
+              "name": "FeedBack",
+              "valType": "LvGain",
+              "init": 5,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Pan",
+              "valType": "RefTbl",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "L50",
+                "L48",
+                "L46",
+                "L44",
+                "L42",
+                "L40",
+                "L38",
+                "L36",
+                "L34",
+                "L32",
+                "L30",
+                "L28",
+                "L26",
+                "L24",
+                "L22",
+                "L20",
+                "L18",
+                "L16",
+                "L14",
+                "L12",
+                "L10",
+                "L8",
+                "L6",
+                "L4",
+                "L2",
+                "0",
+                "R2",
+                "R4",
+                "R6",
+                "R8",
+                "R10",
+                "R12",
+                "R14",
+                "R16",
+                "R18",
+                "R20",
+                "R22",
+                "R24",
+                "R26",
+                "R28",
+                "R30",
+                "R32",
+                "R34",
+                "R36",
+                "R38",
+                "R40",
+                "R42",
+                "R44",
+                "R46",
+                "R48",
+                "R50"
+              ]
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 35,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Dimension",
+          "parameters": [
+            {
+              "name": "Pan",
+              "valType": "RefTbl",
+              "init": 25,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "L50",
+                "L48",
+                "L46",
+                "L44",
+                "L42",
+                "L40",
+                "L38",
+                "L36",
+                "L34",
+                "L32",
+                "L30",
+                "L28",
+                "L26",
+                "L24",
+                "L22",
+                "L20",
+                "L18",
+                "L16",
+                "L14",
+                "L12",
+                "L10",
+                "L8",
+                "L6",
+                "L4",
+                "L2",
+                "0",
+                "R2",
+                "R4",
+                "R6",
+                "R8",
+                "R10",
+                "R12",
+                "R14",
+                "R16",
+                "R18",
+                "R20",
+                "R22",
+                "R24",
+                "R26",
+                "R28",
+                "R30",
+                "R32",
+                "R34",
+                "R36",
+                "R38",
+                "R40",
+                "R42",
+                "R44",
+                "R46",
+                "R48",
+                "R50"
+              ]
+            },
+            {
+              "name": "Depth",
+              "valType": "LvGain",
+              "init": 0,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            },
+            {
+              "name": "Decay",
+              "valType": "",
+              "init": 1,
+              "max": 29,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 1,
+              "views": []
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 13,
+              "max": 50,
+              "rtm_max": 0,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        },
+        {
+          "name": "Z-Tornado",
+          "parameters": [
+            {
+              "name": "Time",
+              "valType": "time RefView BpmSync",
+              "init": 179,
+              "max": 3018,
+              "rtm_max": 0,
+              "dispMax": 2999,
+              "offset": 1,
+              "views": [
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12"
+              ]
+            },
+            {
+              "name": "Rate",
+              "valType": "RefView",
+              "init": 9,
+              "max": 77,
+              "rtm_max": 49,
+              "dispMax": 49,
+              "offset": 1,
+              "views": [
+                "32nd",
+                "16th",
+                "quarter tri",
+                "16th dot",
+                "8th",
+                "half tri",
+                "8th dot",
+                "quarter",
+                "quarter dot",
+                "quarterx2",
+                "quarterx3",
+                "quarterx4",
+                "quarterx5",
+                "quarterx6",
+                "quarterx7",
+                "quarterx8",
+                "quarterx9",
+                "quarterx10",
+                "quarterx11",
+                "quarterx12",
+                "quarterx13",
+                "quarterx14",
+                "quarterx15",
+                "quarterx16",
+                "quarterx17",
+                "quarterx18",
+                "quarterx19",
+                "quarterx20"
+              ]
+            },
+            {
+              "name": "Width",
+              "valType": "RefTbl",
+              "init": 50,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": [
+                "L50",
+                "L48",
+                "L46",
+                "L44",
+                "L42",
+                "L40",
+                "L38",
+                "L36",
+                "L34",
+                "L32",
+                "L30",
+                "L28",
+                "L26",
+                "L24",
+                "L22",
+                "L20",
+                "L18",
+                "L16",
+                "L14",
+                "L12",
+                "L10",
+                "L8",
+                "L6",
+                "L4",
+                "L2",
+                "0",
+                "R2",
+                "R4",
+                "R6",
+                "R8",
+                "R10",
+                "R12",
+                "R14",
+                "R16",
+                "R18",
+                "R20",
+                "R22",
+                "R24",
+                "R26",
+                "R28",
+                "R30",
+                "R32",
+                "R34",
+                "R36",
+                "R38",
+                "R40",
+                "R42",
+                "R44",
+                "R46",
+                "R48",
+                "R50"
+              ]
+            },
+            {
+              "name": "Mix",
+              "valType": "LvGain",
+              "init": 30,
+              "max": 50,
+              "rtm_max": 50,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TTL",
+      "types": [
+        {
+          "name": "BPM",
+          "parameters": [
+            {
+              "name": "ARRM BPM",
+              "valType": "",
+              "init": 120,
+              "max": 250,
+              "rtm_max": 250,
+              "dispMax": 0,
+              "offset": 0,
+              "views": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

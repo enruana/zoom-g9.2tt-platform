@@ -29,19 +29,50 @@
   </section>
 
   <!-- ==================== SLIDE 2: El Pedal ==================== -->
-  <section class="slide t-visual-text bg-hero" data-slide="2">
-    <div class="visual-side" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
-      <img src="img/zoom-g9-nobg.png" alt="Zoom G9.2tt" style="width:620px;filter:drop-shadow(0 8px 40px rgba(0,0,0,0.6)) drop-shadow(0 0 60px rgba(59,130,246,0.15));">
+  <section class="slide bg-hero" data-slide="2" style="padding:50px 100px;flex-direction:row;align-items:center;gap:60px;overflow:hidden;">
+
+    <!-- Glow behind pedal -->
+    <div style="position:absolute;left:15%;top:50%;transform:translate(-50%,-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(59,130,246,0.08) 0%,rgba(168,85,247,0.04) 40%,transparent 70%);pointer-events:none;"></div>
+
+    <!-- Left: Pedal image -->
+    <div style="flex:1.2;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <img src="img/zoom-g9-nobg.png" alt="Zoom G9.2tt" style="width:720px;filter:drop-shadow(0 12px 50px rgba(0,0,0,0.7)) drop-shadow(0 0 80px rgba(59,130,246,0.12)) drop-shadow(0 0 120px rgba(168,85,247,0.06));">
     </div>
-    <div class="text-side" style="justify-content:center;">
-      <h1 style="font-size:56px;margin-bottom:30px;">ZOOM G9.2tt</h1>
-      <p style="font-size:28px;color:var(--text-secondary);margin-bottom:8px;">Twin Tube Guitar Effects Console</p>
-      <ul style="list-style:none;margin-top:30px;font-size:28px;line-height:2;">
-        <li><span class="led led-green"></span> 120 efectos</li>
-        <li><span class="led led-green"></span> 100 patches editables</li>
-        <li><span class="led led-green"></span> Tubos de vacío reales</li>
-        <li><span class="led led-green" style="opacity:0.4;"></span> <span style="color:var(--text-muted);">2007</span></li>
-      </ul>
+
+    <!-- Right: Info -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+      <h1 style="font-size:62px;margin-bottom:12px;letter-spacing:0.02em;">ZOOM G9.2tt</h1>
+      <p style="font-size:26px;color:var(--text-secondary);margin-bottom:40px;">Twin Tube Guitar Effects Console</p>
+
+      <div class="gradient-line" style="width:300px;margin:0 0 40px 0;"></div>
+
+      <!-- Spec badges -->
+      <div style="display:flex;flex-direction:column;gap:20px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <span class="led led-green" style="width:18px;height:18px;"></span>
+          <span style="font-size:30px;color:var(--text-primary);">120 efectos</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <span class="led led-blue" style="width:18px;height:18px;"></span>
+          <span style="font-size:30px;color:var(--text-primary);">100 patches editables</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <span class="led led-amber" style="width:18px;height:18px;"></span>
+          <span style="font-size:30px;color:var(--text-primary);">Tubos de vac&iacute;o reales</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;">
+          <span class="led led-purple" style="width:18px;height:18px;"></span>
+          <span style="font-size:30px;color:var(--text-primary);">Pedal de expresi&oacute;n dual</span>
+        </div>
+      </div>
+
+      <!-- Year badge -->
+      <div style="margin-top:44px;display:flex;align-items:center;gap:16px;">
+        <div style="background:var(--bg-surface);border:1px solid #374151;border-radius:8px;padding:8px 20px;">
+          <span style="font-family:'Cascadia',monospace;font-size:22px;color:var(--text-muted);">2007</span>
+        </div>
+        <span style="font-size:20px;color:var(--text-muted);">&mdash; y todav&iacute;a suena incre&iacute;ble</span>
+      </div>
     </div>
   </section>
 

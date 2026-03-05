@@ -483,6 +483,8 @@ export const MODULE_EFFECT_IDS: Record<string, number> = {
   mod: 0x08,
   dly: 0x09,
   rev: 0x0A,
+  total: 0x00,
+  extra: 0x0B,
 };
 
 /**
@@ -490,7 +492,7 @@ export const MODULE_EFFECT_IDS: Record<string, number> = {
  * Format: F0 52 00 42 31 [EFFECT_ID] [PARAM_ID] [VALUE] 00 F7
  * @param moduleKey Module name (amp, comp, etc.)
  * @param paramId MIDI parameter ID (0x00=On/Off, 0x01=Type, 0x02+=parameters)
- * @param value Parameter value (0-127)
+ * @param value Parameter value (0-65535, encoded as 14-bit: lo=value&0x7F, hi=value>>7)
  * @returns SysEx message bytes
  */
 export function buildParameterMessage(
@@ -503,22 +505,22 @@ export function buildParameterMessage(
     throw new Error(`Unknown module: ${moduleKey}`);
   }
 
-  // Clamp value to 0-127 (MIDI data byte range)
-  // Note: Some parameters (DLY time, MOD depth) can exceed 127 but
-  // require special 2-byte encoding not yet implemented
-  const clampedValue = Math.max(0, Math.min(127, Math.round(value)));
+  // 14-bit encoding: split value into two 7-bit MIDI data bytes
+  const roundedValue = Math.max(0, Math.round(value));
+  const valueLo = roundedValue & 0x7F;
+  const valueHi = roundedValue >> 7;
 
   const message = new Uint8Array([
     ...G9TT_HEADER,
     CMD_PARAMETER_CHANGE,
     effectId,
     paramId,
-    clampedValue,
-    0x00,
+    valueLo,
+    valueHi,
     SYSEX_END,
   ]);
 
-  console.log(`[Protocol] buildParameterMessage: module=${moduleKey}(0x${effectId.toString(16)}) paramId=0x${paramId.toString(16)} value=${value}(clamped=${clampedValue})`);
+  console.log(`[Protocol] buildParameterMessage: module=${moduleKey}(0x${effectId.toString(16)}) paramId=0x${paramId.toString(16)} value=${value} (lo=0x${valueLo.toString(16)} hi=0x${valueHi.toString(16)})`);
 
   return message;
 }
