@@ -33,12 +33,12 @@ export function EQSlider({ parameter, value, disabled = false, accentColor = '#6
     return db > 0 ? `+${db}` : `${db}`;
   }, [clampedValue]);
 
-  const sliderHeight = compact ? 48 : 80;
-  const sliderWidth = compact ? 8 : 12;
-  const thumbHeight = compact ? 6 : 8;
+  const sliderHeight = compact ? 48 : 40;
+  const sliderWidth = compact ? 8 : 6;
+  const thumbHeight = compact ? 6 : 5;
 
   return (
-    <div className={`flex flex-col items-center gap-1.5 ${disabled ? 'opacity-40' : ''}`}>
+    <div className={`flex flex-col items-center gap-0.5 ${disabled ? 'opacity-40' : ''}`}>
       {/* Slider container with padding for thumb overflow */}
       <div
         className="relative"
@@ -101,7 +101,7 @@ export function EQSlider({ parameter, value, disabled = false, accentColor = '#6
 
       {/* Value display */}
       <div
-        className={`font-mono leading-none ${compact ? 'text-[7px]' : 'text-[8px]'}`}
+        className={`font-mono leading-none ${compact ? 'text-[7px]' : 'text-[6px]'}`}
         style={{ color: accentColor, opacity: disabled ? 0.5 : 0.9 }}
       >
         {displayValue}
@@ -109,7 +109,7 @@ export function EQSlider({ parameter, value, disabled = false, accentColor = '#6
 
       {/* Label */}
       <div
-        className={`font-medium leading-none text-center ${compact ? 'text-[6px]' : 'text-[7px]'}`}
+        className={`font-medium leading-none text-center ${compact ? 'text-[6px]' : 'text-[5px]'}`}
         style={{ color: 'rgba(255,255,255,0.5)' }}
       >
         {parameter.shortName ?? parameter.name}

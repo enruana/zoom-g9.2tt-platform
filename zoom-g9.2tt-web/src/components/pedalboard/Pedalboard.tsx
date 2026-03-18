@@ -30,6 +30,8 @@ interface PedalboardProps {
   onExp1AssignmentsChange?: (assignments: PedalAssignment[]) => void;
   /** Callback when Z-Pedal assignments change */
   onZPedalAssignmentsChange?: (assignments: PedalAssignment[]) => void;
+  /** Custom signal chain order (overrides default SIGNAL_CHAIN_ORDER) */
+  chainOrder?: ModuleName[];
 }
 
 export function Pedalboard({
@@ -43,6 +45,7 @@ export function Pedalboard({
   onZPedalToeToggle,
   onExp1AssignmentsChange,
   onZPedalAssignmentsChange,
+  chainOrder = SIGNAL_CHAIN_ORDER,
 }: PedalboardProps) {
   const [localSelectedModule, setLocalSelectedModule] = useState<ModuleName | null>(null);
   const [localExp1State, setLocalExp1State] = useState<ExpressionPedalState>(DEMO_EXP1_STATE);
@@ -106,7 +109,7 @@ export function Pedalboard({
 
       {/* Pedalboard Surface */}
       <div
-        className="p-3 sm:p-4 lg:p-6 rounded-xl overflow-hidden"
+        className="p-2 sm:p-3 lg:p-4 rounded-xl overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%)',
           boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 4px 20px rgba(0,0,0,0.5)',
@@ -116,11 +119,11 @@ export function Pedalboard({
         {/* Mobile: Flex wrap layout with pedals below */}
         <div className="lg:hidden">
           {/* Modules grid */}
-          <div className="flex flex-wrap justify-center gap-2">
-            {SIGNAL_CHAIN_ORDER.map((moduleKey) => {
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {chainOrder.map((moduleKey) => {
               const { Mini } = getModuleComponents(moduleKey);
               return (
-                <div key={moduleKey} className="w-[calc(33.333%-8px)] min-w-[80px] max-w-[100px]">
+                <div key={moduleKey} className="w-[calc(33.333%-6px)] min-w-[70px] max-w-[90px]">
                   <Mini
                     moduleKey={moduleKey}
                     module={patch.modules[moduleKey]}
@@ -135,7 +138,7 @@ export function Pedalboard({
           </div>
 
           {/* Expression pedals in horizontal layout */}
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-3">
             <ExpressionPedalMini
               pedalState={currentExp1}
               onToeToggle={handleExp1ToeToggle}
@@ -154,9 +157,9 @@ export function Pedalboard({
         </div>
 
         {/* Desktop: Grid layout with pedals on sides */}
-        <div className="hidden lg:flex gap-3 xl:gap-4">
-          {/* EXP1 Pedal - Left side (wider) */}
-          <div className="w-44 xl:w-52 shrink-0">
+        <div className="hidden lg:flex gap-2 xl:gap-3">
+          {/* EXP1 Pedal - Left side */}
+          <div className="w-36 xl:w-40 shrink-0">
             <ExpressionPedalMini
               pedalState={currentExp1}
               onToeToggle={handleExp1ToeToggle}
@@ -164,11 +167,11 @@ export function Pedalboard({
             />
           </div>
 
-          {/* Modules Grid - Center (narrower modules) */}
+          {/* Modules Grid - Center */}
           <div className="flex-1 min-w-0">
-            {/* First row: COMP, WAH, ZNR, AMP, CAB */}
-            <div className="grid grid-cols-5 gap-2 xl:gap-3 mb-2 xl:mb-3">
-              {SIGNAL_CHAIN_ORDER.slice(0, 5).map((moduleKey) => {
+            {/* First row */}
+            <div className="grid grid-cols-5 gap-1.5 xl:gap-2 mb-1.5 xl:mb-2">
+              {chainOrder.slice(0, 5).map((moduleKey) => {
                 const { Mini } = getModuleComponents(moduleKey);
                 return (
                   <Mini
@@ -182,9 +185,9 @@ export function Pedalboard({
                 );
               })}
             </div>
-            {/* Second row: EQ, MOD, DLY, REV, EXT */}
-            <div className="grid grid-cols-5 gap-2 xl:gap-3">
-              {SIGNAL_CHAIN_ORDER.slice(5, 10).map((moduleKey) => {
+            {/* Second row */}
+            <div className="grid grid-cols-5 gap-1.5 xl:gap-2">
+              {chainOrder.slice(5, 10).map((moduleKey) => {
                 const { Mini } = getModuleComponents(moduleKey);
                 return (
                   <Mini
@@ -200,8 +203,8 @@ export function Pedalboard({
             </div>
           </div>
 
-          {/* Z-Pedal - Right side (wider) */}
-          <div className="w-48 xl:w-56 shrink-0">
+          {/* Z-Pedal - Right side */}
+          <div className="w-40 xl:w-44 shrink-0">
             <ZPedalMini
               pedalState={currentZPedal}
               onToeToggle={handleZPedalToeToggle}

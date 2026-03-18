@@ -8,10 +8,10 @@
       "tmuxSessionId": "orka-efea708a-bba0-43c3-8c9b-f2549b4f06a8",
       "status": "active",
       "createdAt": "2026-01-23T16:55:18.806Z",
-      "lastActivity": "2026-03-03T14:53:20.588Z",
+      "lastActivity": "2026-03-18T01:39:13.467Z",
       "main": {
-        "claudeSessionId": "64c87491-5da7-4b50-aad4-67890e0e10a4",
-        "tmuxPaneId": "%8",
+        "claudeSessionId": "b3d94647-d87b-44ae-9e3a-33a46b1856a2",
+        "tmuxPaneId": "%0",
         "status": "active"
       },
       "forks": [
@@ -46,11 +46,28 @@
           "claudeSessionId": "57e1d517-ce37-4cf0-a371-4c69a272012d",
           "status": "closed",
           "createdAt": "2026-01-27T17:43:16.980Z"
+        },
+        {
+          "id": "d6e5c143-a7a6-4b74-94e9-da90d5b46d3a",
+          "name": "continue-mapping",
+          "parentId": "main",
+          "claudeSessionId": "39544d46-24eb-4ef6-aaae-0f36373edbcb",
+          "tmuxPaneId": "%1",
+          "status": "active",
+          "createdAt": "2026-03-06T10:17:15.800Z"
         }
       ],
-      "ttydPort": 4447,
-      "ttydPid": 34957
+      "ttydPort": 4444,
+      "ttydPid": 8331
     }
   ],
-  "lastUpdated": "2026-03-04T00:21:39.475Z"
+  "lastUpdated": "2026-03-18T01:39:13.470Z",
+  "tasks": [
+    {
+      "id": "61a6bc5d-fc80-4b3a-b550-6738941b11f2",
+      "title": "bueno yo no entiendo naqda de lo que hace cada modulo, y me gustaria poder entenderlos por separado que hace cada uno como los configuro que cambian   en la senal etc, para saber como combinarlos.",
+      "completed": false,
+      "createdAt": "2026-03-06T12:23:16.383Z"
+    }
+  ]
 }

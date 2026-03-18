@@ -26,6 +26,17 @@
         <span class="led led-amber led-pulse" style="animation-delay:1.2s;"></span>
       </div>
     </div>
+    <aside class="notes">
+HOOK — antes de mostrar nada:
+
+"¿Les ha pasado que algo que les encanta... se queda atrapado en el pasado?
+
+Puede ser una herramienta... una aplicación... un dispositivo... algo que sigue siendo increíble... pero ya no encaja con el mundo de hoy."
+
+(Pausa corta)
+
+"A mí me pasó con esto."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 2: El Pedal ==================== -->
@@ -74,6 +85,17 @@
         <span style="font-size:20px;color:var(--text-muted);">&mdash; y todav&iacute;a suena incre&iacute;ble</span>
       </div>
     </div>
+    <aside class="notes">
+"Este es el Zoom G9.2tt... un pedal multiefectos de guitarra del 2007.
+
+A mí me enamoró más o menos en 2009, cuando lo conocí... y desde ese momento siempre quise tener uno.
+
+Hace aproximadamente un año... por fin me di el gusto de conseguirlo."
+
+(Pausa breve)
+
+"Y ahí fue cuando me di cuenta... de que también había comprado sus problemas."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 3: Software Muerto ==================== -->
@@ -87,6 +109,15 @@
     <div style="margin-top:50px;padding:20px 40px;background:var(--bg-surface);border:2px solid var(--led-red);border-radius:8px;opacity:0.7;">
       <span style="font-size:22px;color:var(--led-red);">OBSOLETO</span>
     </div>
+    <aside class="notes">
+"Porque al empezar a usarlo, me encontré con algo:
+
+El software necesario para controlarlo... corría únicamente en Windows XP.
+
+Con drivers y dependencias que dejaron de existir en 2014.
+
+Así que... literalmente... el software estaba muerto."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 4: La Locura (DIAGRAM) ==================== -->
@@ -98,6 +129,17 @@
       <div class="fragment"></div>
       <div class="fragment"></div>
     </div>
+    <aside class="notes">
+"Entonces, la solución que encontré... fue esta."
+
+(Ir revelando fragmentos uno por uno)
+
+"Un MacBook conectado por SSH a una Raspberry Pi... que corría Wine emulando Windows XP... para poder ejecutar el software del 2007... y conectarlo por USB MIDI al pedal."
+
+(Pausa corta)
+
+"Sí... Era lento... frágil... una locura."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 5: La Decisión ==================== -->
@@ -108,6 +150,15 @@
     <div style="margin-top:60px;">
       <span class="led led-big led-blue led-pulse"></span>
     </div>
+    <aside class="notes">
+"Y ahí fue cuando pensé..."
+
+(Pausa)
+
+"¿Y si construyo mi propio software?"
+
+⏸ Dejar 1-2 segundos de silencio real.
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 6: El Muro ==================== -->
@@ -167,6 +218,19 @@
 
       <p style="font-size:32px;color:var(--text-bright);margin-top:50px;">"Nunca hab&iacute;a usado MIDI en mi vida."</p>
     </div>
+    <aside class="notes">
+ACTO I — "Lo que se puede medir"
+
+"Y ahí apareció el primer problema real:
+
+El protocolo de comunicación del pedal... MIDI SysEx... completamente propietario.
+
+Zoom nunca publicó documentación. No había guías... no había specs... no había nada.
+
+Lo único que tenía era esto:"
+
+"268 bytes de hexadecimal... completamente incomprensible."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 7: El Principio ==================== -->
@@ -175,11 +239,27 @@
       "Lo que se puede medir,<br>se puede controlar."
     </div>
     <div class="gradient-line" style="width:600px;"></div>
+    <aside class="notes">
+"Pero recordé algo que aprendí hace tiempo:
+
+'Lo que se puede medir... se puede controlar.'
+
+Si puedo capturar los datos... puedo entenderlos. Si puedo entenderlos... puedo controlarlos."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 8: La Captura (DIAGRAM) ==================== -->
   <section class="slide t-diagram" data-slide="8">
     <canvas width="1920" height="1080"></canvas>
+    <aside class="notes">
+"Así que decidí capturar el tráfico.
+
+Me puse en el medio de la comunicación entre el software original y el pedal.
+
+Básicamente... intercepté y registré todos los mensajes MIDI que se estaban enviando.
+
+Cada cambio de efecto... cada parámetro... cada interacción... quedaba registrada."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 9: Datos Crudos ==================== -->
@@ -203,11 +283,36 @@
       <span><span style="color:var(--led-purple);">42</span> = G9.2tt</span>
       <span><span style="color:var(--led-red);">F7</span> = fin</span>
     </div>
+    <aside class="notes">
+"Y esto es lo que obtuve: Datos en hexadecimal crudo.
+
+F0: inicio del mensaje SysEx
+52: Zoom
+42: modelo G9.2tt
+F7: fin del mensaje
+
+Pero en ese momento... seguía siendo ruido."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 10: Análisis con IA (DIAGRAM) ==================== -->
   <section class="slide t-diagram" data-slide="10">
     <canvas width="1920" height="1080"></canvas>
+    <aside class="notes">
+"Y aquí es donde entra la IA.
+
+Yo tenía el contexto: sabía qué estaba cambiando en el pedal.
+
+La IA tenía la capacidad de analizar cientos de muestras y encontrar patrones.
+
+Juntos empezamos a entender:
+• codificación por nibbles
+• encoding de 7 bits
+• estructura del header
+• comandos SysEx
+
+No fue solo IA... ni solo yo. Fue la combinación."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 11: Protocolo Descifrado ==================== -->
@@ -227,6 +332,20 @@
       </tbody>
     </table>
     <p class="quote" style="margin-top:50px;">"Un protocolo que no existía en internet<br>ahora tenía especificación completa."</p>
+    <aside class="notes">
+"Y eventualmente... logramos descifrar el protocolo completo.
+
+Identificamos 6 comandos:
+• identificación del dispositivo
+• entrar y salir del modo edición
+• leer patches
+• escribir patches
+• modificar parámetros en tiempo real
+
+Ya podíamos leer todo del pedal."
+
+(Pausa breve de logro)
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 12: Faltaba Algo — Checksum explicado ==================== -->
@@ -287,16 +406,63 @@
     </div>
 
     <span class="led led-big led-amber led-blink" style="margin-top:10px;"></span>
+    <aside class="notes">
+"Pero había un problema.
+
+Leer... funcionaba perfecto. Escribir... no.
+
+Nos faltaba algo crítico: El checksum.
+
+Un algoritmo de verificación... que no sabíamos cómo funcionaba.
+
+Y sin eso... no podíamos controlar nada."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 13: Muro del Checksum (DIAGRAM) ==================== -->
   <section class="slide t-diagram" data-slide="13">
     <canvas width="1920" height="1080"></canvas>
+    <aside class="notes">
+ACTO II — "El momento que cambió todo"
+
+"Para escribir datos en el pedal... necesitábamos un checksum.
+
+Un algoritmo de verificación... que no conocíamos.
+
+Y sin saber qué datos cubría ni qué algoritmo usaba... era imposible replicarlo."
+
+(Pausa)
+
+"Así que hicimos lo obvio... Probamos de todo.
+
+Algoritmos simples... complejos... combinaciones...
+
+Nada funcionaba. Absolutamente nada."
+
+(Pausa)
+
+"Y la frustración... empezó a aparecer."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 14: Sugerencia Inesperada (DIAGRAM) ==================== -->
   <section class="slide t-diagram" data-slide="14">
     <canvas width="1920" height="1080"></canvas>
+    <aside class="notes">
+"Y en ese momento... pasó algo que no esperaba.
+
+La IA... sugirió algo que a mí no se me habría ocurrido."
+
+(Pausa)
+
+"Me dijo: '¿Y si decompilas el ejecutable?'"
+
+(Pausa corta, deja que entre la idea)
+
+"El software original estaba escrito en .NET... Y los binarios de .NET... se pueden decompilar casi perfectamente.
+
+Eso significaba algo muy loco: El código fuente... estaba ahí... escondido dentro del .exe."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 15: El Contraste (DIAGRAM) ==================== -->
@@ -307,6 +473,27 @@
       <div class="fragment"></div>
       <div class="fragment"></div>
     </div>
+    <aside class="notes">
+⭐ SLIDE ESTRELLA — Bajar el ritmo. Actuarlo.
+
+(Revelar fragmento por fragmento)
+
+"En ese momento... había dos caminos."
+
+"El camino rojo: Yo solo... con datos crudos... probando algoritmos a ciegas... Literalmente imposible."
+
+(Pausa)
+
+"Y el camino verde: La IA sugiere decompilar... encontramos el código... y ahí estaba..."
+
+(Pausa breve)
+
+"El algoritmo exacto. CRC-32... con un polinomio específico. Funcionó... al primer intento."
+
+(Pausa más larga — deja que respire)
+
+"Y ahí entendí algo clave: No era yo... No era la IA... Era la combinación."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 16: El CRC-32 ==================== -->
@@ -327,6 +514,11 @@ checksum = crc ^ <span class="number">0xFFFFFFFF</span></div>
       <span>Input: <span style="color:var(--led-green);">128 bytes crudos</span></span>
     </div>
     <p class="quote" style="margin-top:30px;">"Estaba dentro del .exe de 2007."</p>
+    <aside class="notes">
+"El checksum era: CRC-32... polinomio 0xEDB88320... calculado sobre los 128 bytes del patch.
+
+Estaba ahí... En un ejecutable del 2007... Esperando a que alguien lo encontrara."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 17: Momento Eureka (LIVE ANIMATION) ==================== -->
@@ -375,6 +567,23 @@ Device confirmed.      ✅
         se puede controlar."
       </p>
     </div>
+    <aside class="notes">
+⏸ CLÍMAX EMOCIONAL — Darlo con peso.
+
+"Y cuando lo probamos..."
+
+(Pausa)
+
+"Checksum verificado. Parche escrito. El pedal responde."
+
+(Pausa)
+
+"Funciona."
+
+(Silencio corto)
+
+"En ese momento... Lo que se puede medir... se puede controlar."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 18: Pregunta Siguiente ==================== -->
@@ -448,6 +657,17 @@ Device confirmed.      ✅
       </div>
       <span class="led led-big led-blue led-pulse" style="margin-top:20px;"></span>
     </div>
+    <aside class="notes">
+ACTO III — "De script a plataforma"
+
+"Listo. Ya podía hablar con el pedal. Tenía un script en Python... que funcionaba."
+
+(Pausa)
+
+"Pero eso era... para mí.
+
+Y ahí apareció la siguiente pregunta: ¿Puedo convertir esto... en algo para todos?"
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 19: El Alcance ==================== -->
@@ -465,6 +685,19 @@ Device confirmed.      ✅
       <li><span class="led led-amber"></span> Responsive mobile</li>
     </ul>
     <p class="quote bright" style="margin-top:40px;">"Una persona. Con IA."</p>
+    <aside class="notes">
+"Y eso fue lo que construí: Una plataforma completa para controlar el pedal."
+
+(Ritmo progresivo)
+
+"Más de 140 efectos... 100 patches... edición en tiempo real...
+
+Sincronización en la nube... sesiones colaborativas... acceso desde el celular..."
+
+(Pausa)
+
+"Una sola persona... Con IA."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 20: Proceso de Construcción (DIAGRAM) ==================== -->
@@ -474,11 +707,41 @@ Device confirmed.      ✅
       <div class="fragment"></div>
       <div class="fragment"></div>
     </div>
+    <aside class="notes">
+👉 Este slide te diferencia de los "vibe coders"
+
+"Pero esto es importante: No fue sentarme... y pedirle a la IA que me hiciera una app."
+
+(Pausa)
+
+"Fue un proceso.
+
+Primero: entender el problema. Luego: definir producto. Después: arquitectura. Después: implementación."
+
+(Ritmo claro)
+
+"PRD... épicas... historias... componentes... servicios."
+
+(Pausa)
+
+"La IA aceleró todo... Pero el pensamiento... fue mío."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 21: La Arquitectura (DIAGRAM) ==================== -->
   <section class="slide t-diagram" data-slide="21">
     <canvas width="1920" height="1080"></canvas>
+    <aside class="notes">
+"La arquitectura es simple, pero intencional:
+
+Frontend en React... manejo de estado... servicios para MIDI, sesiones y nube...
+
+Y conexiones externas: El pedal... y Firebase."
+
+(Pausa)
+
+"No es sobre tecnología. Es sobre tomar decisiones correctas."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 22: Velocidad Real ==================== -->
@@ -498,6 +761,17 @@ Device confirmed.      ✅
       <span class="led led-big led-blue led-pulse"></span>
       <span class="led led-big led-purple led-pulse" style="animation-delay:0.5s;"></span>
     </div>
+    <aside class="notes">
+"Todo esto: Reverse engineering... librería... plataforma completa..."
+
+(Pausa)
+
+"Una persona. Con IA."
+
+(Miras al público)
+
+"Esto... es lo que es posible hoy."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 23: No Todo Fue Perfecto ==================== -->
@@ -509,6 +783,15 @@ Device confirmed.      ✅
     <div style="margin-top:50px;">
       <span class="led led-big led-amber led-glow-grow" style="width:40px;height:40px;"></span>
     </div>
+    <aside class="notes">
+ACTO IV — "La verdad incómoda"
+
+"Pero seamos honestos..."
+
+(Pausa)
+
+"La IA rompe cosas."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 24: Ejemplos Reales ==================== -->
@@ -520,16 +803,63 @@ Device confirmed.      ✅
       <li style="padding:22px 0;"><span class="led led-red"></span> Tuve que rehacer el módulo de protocolo completo</li>
     </ul>
     <p class="quote" style="margin-top:50px;color:var(--text-muted);">"Esto pasa. Siempre."</p>
+    <aside class="notes">
+"Me rompió interfaces que funcionaban.
+
+Cambió el protocolo sin avisar.
+
+Alteró estructuras de datos...
+
+Y tuve que reconstruir módulos completos."
+
+(Pausa)
+
+"Esto pasa. Todo el tiempo."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 25: Por Qué Importa (DIAGRAM) ==================== -->
   <section class="slide t-diagram" data-slide="25">
     <canvas width="1920" height="1080"></canvas>
+    <aside class="notes">
+"Y aquí está el punto:
+
+Un developer con contexto... detecta el error... y lo corrige.
+
+Un developer sin contexto..."
+
+(Pausa)
+
+"ni siquiera se da cuenta."
+
+(Pausa)
+
+"Y termina enviando datos corruptos... a producción... o peor... a un dispositivo físico."
+
+(Miras al público)
+
+"Tu experiencia... es el filtro de calidad."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 26: Lección Inesperada (DIAGRAM) ==================== -->
   <section class="slide t-diagram" data-slide="26">
     <canvas width="1920" height="1080"></canvas>
+    <aside class="notes">
+👉 Esta frase es oro. Entregarla bien.
+
+"Y la lección más importante...
+
+La IA no te hace mejor ingeniero automatizando tu pensamiento."
+
+(Pausa)
+
+"Te hace mejor... obligándote a pensar con claridad.
+
+Idea vaga... resultado vago.
+
+Prompt claro... resultado exacto."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 27: La Reflexión ==================== -->
@@ -543,6 +873,17 @@ Device confirmed.      ✅
       </div>
     </div>
     <div class="gradient-line" style="width:600px;margin-top:50px;"></div>
+    <aside class="notes">
+CIERRE
+
+"Tu proceso cognitivo... no se acelera."
+
+(Pausa)
+
+"Tus resultados... sí.
+
+La IA no piensa por ti. Amplifica... cómo piensas."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 28: Lo que Cambió ==================== -->
@@ -573,6 +914,17 @@ Device confirmed.      ✅
     <div class="split-footer">
       "Lo que cambió no es <span style="color:var(--led-blue);">QUÉ</span> aprendes.<br>Es <span style="color:var(--led-purple);">CÓMO</span> lo aplicas."
     </div>
+    <aside class="notes">
+"Antes: Memorizar sintaxis... buscar en Stack Overflow... copiar, pegar... adaptar."
+
+(Pausa)
+
+"Ahora: Entender intención... comunicar claramente... validar resultados."
+
+(Pausa)
+
+"No cambió lo que aprendes. Cambió... cómo lo usas."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 29: El Camino (DIAGRAM) ==================== -->
@@ -583,6 +935,25 @@ Device confirmed.      ✅
       <div class="fragment"></div>
       <div class="fragment"></div>
     </div>
+    <aside class="notes">
+(Revelar escalones uno por uno)
+
+"Este es el camino:
+
+Primero: fundamentos.
+
+Luego: práctica... experiencia.
+
+Después: experimentación."
+
+(Pausa)
+
+"Y solo entonces... IA."
+
+(Pausa)
+
+"Porque si no hay base... no hay nada que amplificar."
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 30: El Producto ==================== -->
@@ -625,6 +996,17 @@ Device confirmed.      ✅
 
     <div class="url-display" style="margin-top:10px;">zoomg9.enruana.com</div>
     <p class="quote" style="margin-top:14px;">"Pueden probarlo ahora mismo."</p>
+    <aside class="notes">
+"Y este es el resultado.
+
+Una plataforma real... en producción.
+
+zoomg9.enruana.com
+
+Pueden probarla ahora mismo."
+
+👉 Si haces demo, que sea breve.
+    </aside>
   </section>
 
   <!-- ==================== SLIDE 31: El Cierre ==================== -->
@@ -644,6 +1026,27 @@ Device confirmed.      ✅
       <span class="led led-pink"></span>
       <span class="led" style="background:#94a3b8;box-shadow:0 0 10px #94a3b8,0 0 25px #94a3b844;"></span>
     </div>
+    <aside class="notes">
+👉 Tu momento final. Darlo con peso.
+
+"Estos LEDs... representan potencial.
+
+Cada uno... es algo que podría construirse."
+
+(Pausa larga)
+
+"La pregunta no es si la IA puede ayudarte."
+
+(Miras al público)
+
+"La pregunta es: ¿Qué van a construir ustedes?"
+
+⏸ NO hablar después de esto inmediatamente.
+
+---
+
+"Gracias. ¿Preguntas?"
+    </aside>
   </section>
 
 </div><!-- .deck -->

@@ -43,7 +43,7 @@ export interface ModuleColors {
 export interface ModuleLEDProps {
   enabled: boolean;
   ledColor: string;
-  size?: 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md';
 }
 
 /** Props for footswitch button */
@@ -51,7 +51,7 @@ export interface ModuleFootswitchProps {
   enabled: boolean;
   moduleName: string;
   onToggle?: (enabled: boolean) => void;
-  size?: 'sm' | 'md';
+  size?: 'xs' | 'sm' | 'md';
 }
 
 /** Props for panel header */

@@ -206,19 +206,41 @@ export const MODULE_INFO: Record<ModuleName, ModuleInfo> = {
   ext: { name: 'EXT', fullName: 'External', color: 'slate', description: 'External Loop' },
 };
 
-/** Signal chain order (how signal flows through the pedal) */
+/** Default signal chain order (PRE chain, WAH before AMP) */
 export const SIGNAL_CHAIN_ORDER: ModuleName[] = [
   'comp',
   'wah',
+  'ext',
   'znr',
   'amp',
-  'cab',
   'eq',
+  'cab',
   'mod',
   'dly',
   'rev',
-  'ext',
 ];
+
+/**
+ * Get the signal chain order based on AMP chain and WAH position settings.
+ * - ampChain: 0=PRE (amp before mod/dly), 1=POST (amp after mod/dly)
+ * - wahPosition: 0=Before amp (Befr), 1=After amp (Aftr)
+ */
+export function getSignalChainOrder(ampChain: number, wahPosition: number): ModuleName[] {
+  if (ampChain === 0 && wahPosition === 0) {
+    // Pre-bF: COMP WAH EXT ZNR AMP EQ CAB MOD DLY REV
+    return ['comp', 'wah', 'ext', 'znr', 'amp', 'eq', 'cab', 'mod', 'dly', 'rev'];
+  }
+  if (ampChain === 0 && wahPosition === 1) {
+    // Pre-AF: COMP EXT ZNR AMP EQ CAB WAH MOD DLY REV
+    return ['comp', 'ext', 'znr', 'amp', 'eq', 'cab', 'wah', 'mod', 'dly', 'rev'];
+  }
+  if (ampChain === 1 && wahPosition === 0) {
+    // Post-bF: COMP WAH MOD DLY EXT ZNR AMP EQ CAB REV
+    return ['comp', 'wah', 'mod', 'dly', 'ext', 'znr', 'amp', 'eq', 'cab', 'rev'];
+  }
+  // Post-AF: COMP MOD DLY EXT ZNR AMP EQ CAB WAH REV
+  return ['comp', 'mod', 'dly', 'ext', 'znr', 'amp', 'eq', 'cab', 'wah', 'rev'];
+}
 
 /**
  * Get the effect type name for a module and type ID

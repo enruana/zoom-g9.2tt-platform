@@ -1,14 +1,24 @@
-import type { Patch, ModuleState, PatchModules } from '../types/patch';
+import type { Patch, ModuleState, PatchModules, ChannelBData } from '../types/patch';
 
 /** Create a default module state */
 function createModule(enabled: boolean, type: number, params: number[]): ModuleState {
   return { enabled, type, params };
 }
 
+/** Create default Channel B data - noticeably different from Channel A */
+function createDefaultChannelB(): ChannelBData {
+  return {
+    znr: createModule(true, 1, [8]),
+    ext: createModule(false, 0, [60, 70, 80]),
+    amp: createModule(true, 10, [80, 30, 70]),
+    eq: createModule(true, 0, [20, 12, 24, 8, 18, 14]),
+  };
+}
+
 /** Create default modules with all disabled */
 function createDefaultModules(): PatchModules {
   return {
-    amp: createModule(true, 0, [50, 50, 50, 50, 50]),       // Clean amp
+    amp: createModule(true, 0, [50, 50, 50, 0]),             // Clean amp (gain, tone, level, chain=PRE)
     comp: createModule(false, 0, [50, 50, 50]),            // Compressor off
     wah: createModule(false, 0, [50, 50]),                 // Wah off
     ext: createModule(false, 0, [50]),                     // External off
@@ -140,10 +150,9 @@ function generateDemoPatches(): Patch[] {
     modules.amp.type = (i % 8);
     modules.amp.params = [
       40 + variation * 5,  // Gain
-      50 + (variation - 5) * 3,  // Bass
-      50,  // Mid
-      50 + (variation - 5) * 2,  // Treble
+      50 + (variation - 5) * 3,  // Tone
       60 + variation * 2,  // Level
+      0,  // Chain (0=PRE)
     ];
 
     // Enable effects based on patch category
@@ -186,6 +195,8 @@ function generateDemoPatches(): Patch[] {
       name: name.substring(0, 10).padEnd(10, ' '),
       level: 80 + (i % 20),
       modules,
+      ampSel: 'A',
+      channelB: createDefaultChannelB(),
     });
   }
 

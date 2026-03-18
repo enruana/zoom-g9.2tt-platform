@@ -16,7 +16,7 @@ export function EqModuleMini(props: BaseModuleMiniProps) {
       renderParameters={
         !compact && parameters.length > 0
           ? () => (
-              <div className="flex justify-center items-start gap-1 px-2">
+              <div className="flex justify-center items-start gap-0.5 px-1">
                 {parameters.map((param, index) => {
                   const paramValue = module.params[index] ?? param.defaultValue ?? param.min;
                   return (

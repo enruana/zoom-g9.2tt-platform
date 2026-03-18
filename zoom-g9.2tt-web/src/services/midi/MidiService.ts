@@ -293,6 +293,7 @@ class MidiService {
       id: raw.patchId,
       name: raw.name,
       level: raw.level,
+      ampSel: raw.ampSel === 0 ? 'A' : 'B',
       modules: {
         amp: {
           enabled: raw.modules.amp.enabled,
@@ -345,6 +346,28 @@ class MidiService {
           params: raw.modules.rev.params,
         },
       },
+      channelB: {
+        znr: {
+          enabled: raw.channelB.znr.enabled,
+          type: raw.channelB.znr.type,
+          params: raw.channelB.znr.params,
+        },
+        ext: {
+          enabled: raw.channelB.ext.enabled,
+          type: raw.channelB.ext.type,
+          params: raw.channelB.ext.params,
+        },
+        amp: {
+          enabled: raw.channelB.amp.enabled,
+          type: raw.channelB.amp.type,
+          params: raw.channelB.amp.params,
+        },
+        eq: {
+          enabled: raw.channelB.eq.enabled,
+          type: 0,
+          params: raw.channelB.eq.params,
+        },
+      },
     };
   }
 
@@ -357,6 +380,7 @@ class MidiService {
       id,
       name,
       level: 80,
+      ampSel: 'A',
       modules: {
         amp: { ...defaultModule },
         comp: { ...defaultModule },
@@ -368,6 +392,12 @@ class MidiService {
         mod: { ...defaultModule },
         dly: { ...defaultModule },
         rev: { ...defaultModule },
+      },
+      channelB: {
+        znr: { enabled: false, type: 0, params: [0] },
+        ext: { enabled: false, type: 0, params: [0, 0, 0] },
+        amp: { enabled: false, type: 0, params: [0, 0, 0] },
+        eq: { enabled: false, type: 0, params: [16, 16, 16, 16, 16, 16] },
       },
     };
   }
@@ -576,7 +606,11 @@ class MidiService {
       return;
     }
 
-    // Auto-enable live mode if not already enabled
+    // 0x31 parameter changes require live mode, not edit mode
+    if (this.isInEditMode) {
+      console.log('[MidiService] Exiting edit mode for parameter change');
+      this.exitEditMode();
+    }
     if (!this.isInLiveMode) {
       console.log('[MidiService] Auto-enabling live mode for parameter change');
       this.enableLiveMode();
@@ -803,15 +837,26 @@ class MidiService {
       throw new Error('Not connected to a MIDI device');
     }
 
-    // Enable live mode and select patch if needed
-    if (!this.isInLiveMode || this.currentPreviewPatchId !== patch.id) {
-      await this.selectPatchForPreview(patch.id);
+    // 0x28 write requires a full edit cycle: enter → write → exit
+    if (this.isInLiveMode) {
+      await this.disableLiveMode();
+    }
+    if (this.isInEditMode) {
+      await this.exitEditMode();
     }
 
-    // Serialize and send patch data for preview
+    await this.enterEditMode();
+
+    // Serialize and send patch data via 0x28
     const rawData = serializePatch(patch);
     const writeData = buildWritePatchMessage(rawData);
+    console.log(`[MIDI] previewPatch: ampSel=${patch.ampSel} rawByte[0x3C]=0x${rawData[0x3C]?.toString(16)} (${rawData.length} bytes → ${writeData.length} bytes SysEx)`);
     this.outputPort.send(Array.from(writeData));
+
+    // Small delay for device to process the write
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    await this.exitEditMode();
   }
 
   /**

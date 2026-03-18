@@ -25,6 +25,14 @@ export interface PatchModules {
   rev: ModuleState;
 }
 
+/** Channel B data (always stored at direct offsets 0x24-0x3B) */
+export interface ChannelBData {
+  znr: ModuleState;
+  ext: ModuleState;
+  amp: ModuleState;
+  eq: ModuleState;
+}
+
 /** A single patch (preset) */
 export interface Patch {
   /** Patch number (0-99) */
@@ -33,8 +41,36 @@ export interface Patch {
   name: string;
   /** Patch level (0-100) */
   level: number;
-  /** All effect modules */
+  /** All effect modules (ZNR/AMP/EQ always Channel A) */
   modules: PatchModules;
+  /** Active PreAmp channel: A or B */
+  ampSel: 'A' | 'B';
+  /** Channel B's ZNR/AMP/EQ data (always Channel B) */
+  channelB: ChannelBData;
+}
+
+/** Per-channel module keys (ZNR, AMP, EQ have separate A/B data) */
+const PER_CHANNEL_MODULES = new Set<ModuleName>(['znr', 'ext', 'amp', 'eq']);
+
+/** Check if a module key is per-channel (has A/B variants) */
+export function isPerChannelModule(key: string): key is 'znr' | 'ext' | 'amp' | 'eq' {
+  return PER_CHANNEL_MODULES.has(key as ModuleName);
+}
+
+/**
+ * Get the "effective" modules for display, based on ampSel.
+ * modules always stores Channel A data; channelB always stores Channel B data.
+ * This helper returns modules with znr/ext/amp/eq swapped from channelB when ampSel='B'.
+ */
+export function getEffectiveModules(patch: Patch): PatchModules {
+  if ((patch.ampSel ?? 'A') !== 'B') return patch.modules;
+  return {
+    ...patch.modules,
+    znr: patch.channelB.znr,
+    ext: patch.channelB.ext,
+    amp: patch.channelB.amp,
+    eq: patch.channelB.eq,
+  };
 }
 
 /** For real-time parameter updates */

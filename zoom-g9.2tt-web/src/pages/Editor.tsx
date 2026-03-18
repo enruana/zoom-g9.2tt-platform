@@ -11,6 +11,7 @@ import { midiService } from '../services/midi/MidiService';
 import { toast } from '../components/common/Toast';
 import { SessionBadge, ClientBadge, CreateSessionDialog } from '../components/session';
 import { Pedalboard } from '../components/pedalboard/Pedalboard';
+import { PatchConfigBar } from '../components/pedalboard/PatchConfigBar';
 import { getModuleComponents } from '../components/modules/registry';
 import { ParameterModal } from '../components/parameter/ParameterModal';
 import { TypeSelector } from '../components/parameter/TypeSelector';
@@ -20,10 +21,11 @@ import { RenamePatchDialog } from '../components/dialogs/RenamePatchDialog';
 import { BulkSendDialog } from '../components/dialogs/BulkSendDialog';
 import { UserMenu } from '../components/common/UserMenu';
 import { getEditableParameters } from '../data/parameterMaps';
-import { MODULE_INFO, hasMultipleTypes } from '../data/effectTypes';
+import { MODULE_INFO, hasMultipleTypes, getSignalChainOrder } from '../data/effectTypes';
 import { MODULE_COLORS } from '../data/moduleColors';
 import { Button, IconButton, ToggleButton } from '../components/common/Button';
 import type { ModuleName } from '../types/patch';
+import { getEffectiveModules } from '../types/patch';
 
 // localStorage key for Online Mode persistence
 const ONLINE_MODE_STORAGE_KEY = 'g9tt_online_mode';
@@ -396,7 +398,7 @@ export function Editor() {
   };
 
   const selectedModuleState = currentPatch && selectedModule
-    ? currentPatch.modules[selectedModule]
+    ? getEffectiveModules(currentPatch)[selectedModule]
     : null;
 
   const handleClosePanel = useCallback(() => {
@@ -518,6 +520,45 @@ export function Editor() {
       midiService.sendModuleToggle(moduleKey, enabled);
     }
   }, [currentPatch, patchActions, isOnlineMode, isConnected, isClient, sessionActions]);
+
+  // Use ref so MIDI preview always reads the latest patch without stale closures
+  const currentPatchRef = useRef(currentPatch);
+  currentPatchRef.current = currentPatch;
+
+  const handleChannelSwitch = useCallback((targetChannel: 'A' | 'B') => {
+    patchActions.switchChannel(targetChannel);
+
+    // In online mode, preview the patch with only ampSel changed
+    // (no RT command for ampSel, must preview the entire patch)
+    if (isOnlineMode && isConnected) {
+      const patch = currentPatchRef.current;
+      if (!patch) return;
+      // Data stays fixed — only ampSel changes
+      const switchedPatch = { ...patch, ampSel: targetChannel };
+      midiService.previewPatch(switchedPatch).catch((err) => {
+        console.error('[Editor] Failed to preview channel switch:', err);
+      });
+    }
+  }, [patchActions, isOnlineMode, isConnected]);
+
+  // Derive effect chain state from current patch
+  const ampChain = currentPatch?.modules.amp.params[3] ?? 0;
+  const wahPosition = currentPatch?.modules.wah.params[0] ?? 0;
+  const chainOrder = useMemo(
+    () => getSignalChainOrder(ampChain, wahPosition),
+    [ampChain, wahPosition]
+  );
+
+  const handleChainModeChange = useCallback((newAmpChain: number, newWahPosition: number) => {
+    patchActions.setEffectChain(newAmpChain, newWahPosition);
+
+    if (isOnlineMode && isConnected) {
+      // AMP chain: module 0x05, param 0x05
+      midiService.sendParameter('amp', 0x05, newAmpChain);
+      // WAH position: module 0x02, param 0x02
+      midiService.sendParameter('wah', 0x02, newWahPosition);
+    }
+  }, [patchActions, isOnlineMode, isConnected]);
 
   const handleTypeSelect = useCallback(() => {
     if (!selectedModule || !hasMultipleTypes(selectedModule)) return;
@@ -1413,13 +1454,23 @@ export function Editor() {
                 </div>
               </div>
 
+              {/* Patch Config Bar */}
+              <PatchConfigBar
+                ampChain={ampChain}
+                wahPosition={wahPosition}
+                ampSel={currentPatch.ampSel ?? 'A'}
+                onChainModeChange={handleChainModeChange}
+                onChannelSwitch={handleChannelSwitch}
+              />
+
               {/* Pedalboard */}
               <div className="mb-4 md:mb-6">
                 <Pedalboard
-                  patch={currentPatch}
+                  patch={{ ...currentPatch, modules: getEffectiveModules(currentPatch) }}
                   selectedModule={selectedModule}
                   onModuleSelect={handleModuleSelect}
                   onModuleToggle={handleModuleToggle}
+                  chainOrder={chainOrder}
                 />
               </div>
 

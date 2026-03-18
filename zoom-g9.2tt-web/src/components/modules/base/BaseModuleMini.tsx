@@ -56,14 +56,14 @@ export function BaseModuleMini({
       >
         {/* PARAMETERS SECTION - Top (desktop only) */}
         {!compact && renderParameters && (
-          <div className="pt-4 pb-2">
+          <div className="pt-1.5 pb-0.5">
             {renderParameters()}
           </div>
         )}
 
         {/* CUSTOM VISUALS SECTION (for future VU meters, waveforms, etc.) */}
         {!compact && renderCustomVisuals && (
-          <div className="px-3">
+          <div className="px-1.5">
             {renderCustomVisuals()}
           </div>
         )}
@@ -77,19 +77,24 @@ export function BaseModuleMini({
           compact={compact}
         />
 
-        {/* LED + FOOTSWITCH - Bottom */}
-        <div className={`flex flex-col items-center ${compact ? 'pb-2 gap-1.5' : 'pb-6 gap-3'}`}>
-          <ModuleLED
-            enabled={module.enabled}
-            ledColor={baseColors.led}
-            size={compact ? 'sm' : 'md'}
-          />
-          <ModuleFootswitch
-            enabled={module.enabled}
-            moduleName={info.fullName}
-            onToggle={onToggle}
-            size={compact ? 'sm' : 'md'}
-          />
+        {/* FOOTSWITCH with LED - Bottom */}
+        <div className={`flex justify-center ${compact ? 'pb-2' : 'pb-1.5'}`}>
+          <div className="relative inline-flex">
+            {/* LED - positioned top-left of footswitch */}
+            <div className="absolute" style={{ top: -2, left: -2, zIndex: 1 }}>
+              <ModuleLED
+                enabled={module.enabled}
+                ledColor={baseColors.led}
+                size={compact ? 'sm' : 'xs'}
+              />
+            </div>
+            <ModuleFootswitch
+              enabled={module.enabled}
+              moduleName={info.fullName}
+              onToggle={onToggle}
+              size={compact ? 'sm' : 'xs'}
+            />
+          </div>
         </div>
       </div>
     </button>

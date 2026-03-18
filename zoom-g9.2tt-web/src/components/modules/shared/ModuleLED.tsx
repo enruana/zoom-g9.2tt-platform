@@ -2,7 +2,7 @@ import type { ModuleLEDProps } from '../base/types';
 
 /** LED indicator component extracted from ModuleMini */
 export function ModuleLED({ enabled, ledColor, size = 'md' }: ModuleLEDProps) {
-  const sizeClass = size === 'sm' ? 'w-2.5 h-2.5' : 'w-4 h-4';
+  const sizeClass = size === 'xs' ? 'w-1.5 h-1.5' : size === 'sm' ? 'w-2.5 h-2.5' : 'w-4 h-4';
 
   return (
     <div

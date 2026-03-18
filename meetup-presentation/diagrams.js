@@ -6,7 +6,7 @@ var DiagramRenderer = (function () {
   'use strict';
 
   /* --- Font setup --- */
-  var FONT_HAND = '"Virgil", "Segoe UI", sans-serif';
+  var FONT_HAND = '"Montserrat", "Segoe UI", sans-serif';
   var FONT_MONO = '"Cascadia", "Cascadia Code", "Fira Code", monospace';
 
   /* --- Fragment groups per slide (0-indexed) --- */

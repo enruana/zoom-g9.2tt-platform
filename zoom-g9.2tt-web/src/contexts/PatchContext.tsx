@@ -1,6 +1,7 @@
 import { createContext, useContext, useReducer, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Patch } from '../types/patch';
+import { isPerChannelModule } from '../types/patch';
 
 const STORAGE_KEY = 'g9tt_patches';
 
@@ -44,6 +45,10 @@ export interface PatchActions {
   setError: (error: string | null) => void;
   /** Clear all patches */
   clearPatches: () => void;
+  /** Switch PreAmp channel A/B for current patch */
+  switchChannel: (targetChannel: 'A' | 'B') => void;
+  /** Set effect chain configuration (ampChain + wahPosition) */
+  setEffectChain: (ampChain: number, wahPosition: number) => void;
   /** Set remote state from server (for client mode) */
   setRemoteState: (patches: Patch[], selectedPatchId: number) => void;
 }
@@ -70,7 +75,47 @@ type PatchAction =
   | { type: 'SET_LOADING'; isLoading: boolean; progress: number }
   | { type: 'SET_ERROR'; error: string | null }
   | { type: 'CLEAR_PATCHES' }
-  | { type: 'SET_REMOTE_STATE'; patches: Patch[]; selectedPatchId: number };
+  | { type: 'SWITCH_CHANNEL'; targetChannel: 'A' | 'B' }
+  | { type: 'SET_REMOTE_STATE'; patches: Patch[]; selectedPatchId: number }
+  | { type: 'SET_EFFECT_CHAIN'; ampChain: number; wahPosition: number };
+
+// Migrate legacy patches that lack ampSel/channelB fields
+function migratePatch(patch: Patch): Patch {
+  let needsMigration = !patch.ampSel || !patch.channelB;
+
+  // Migrate amp params: add chain bit (default PRE=0) if missing
+  const ampParams = patch.modules.amp.params;
+  if (ampParams.length < 4) {
+    needsMigration = true;
+  }
+
+  if (!needsMigration) return patch;
+
+  const migratedAmpParams = ampParams.length < 4
+    ? [...ampParams, ...Array(4 - ampParams.length).fill(0)]
+    : ampParams;
+
+  const baseChannelB = patch.channelB ?? {
+    znr: { enabled: false, type: 0, params: [0] },
+    ext: { enabled: false, type: 0, params: [0, 0, 0] },
+    amp: { enabled: false, type: 0, params: [0, 0, 0] },
+    eq: { enabled: false, type: 0, params: [16, 16, 16, 16, 16, 16] },
+  };
+
+  return {
+    ...patch,
+    ampSel: patch.ampSel ?? 'A',
+    channelB: {
+      ...baseChannelB,
+      // Ensure ext exists even if channelB was saved before ext was added
+      ext: baseChannelB.ext ?? { enabled: false, type: 0, params: [0, 0, 0] },
+    },
+    modules: {
+      ...patch.modules,
+      amp: { ...patch.modules.amp, params: migratedAmpParams },
+    },
+  };
+}
 
 // Load patches from localStorage
 function loadPatchesFromStorage(): Patch[] {
@@ -79,7 +124,7 @@ function loadPatchesFromStorage(): Patch[] {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map(migratePatch);
       }
     }
   } catch (e) {
@@ -115,7 +160,7 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
     case 'SET_PATCHES':
       return {
         ...state,
-        patches: action.patches,
+        patches: action.patches.map(migratePatch),
         isLoading: false,
         error: null,
       };
@@ -143,6 +188,22 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
         if (patch.id !== state.selectedPatchId) return patch;
 
         const moduleKey = action.moduleKey as keyof typeof patch.modules;
+
+        // Per-channel modules (znr/amp/eq): route to channelB when ampSel='B'
+        if (isPerChannelModule(moduleKey) && (patch.ampSel ?? 'A') === 'B') {
+          const mod = patch.channelB[moduleKey];
+          if (!mod) return patch;
+          const newParams = [...mod.params];
+          newParams[action.paramIndex] = action.value;
+          return {
+            ...patch,
+            channelB: {
+              ...patch.channelB,
+              [moduleKey]: { ...mod, params: newParams },
+            },
+          };
+        }
+
         const module = patch.modules[moduleKey];
         if (!module) return patch;
 
@@ -153,18 +214,12 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
           ...patch,
           modules: {
             ...patch.modules,
-            [moduleKey]: {
-              ...module,
-              params: newParams,
-            },
+            [moduleKey]: { ...module, params: newParams },
           },
         };
       });
 
-      return {
-        ...state,
-        patches: newPatches,
-      };
+      return { ...state, patches: newPatches };
     }
 
     case 'UPDATE_MODULE_TYPE': {
@@ -174,6 +229,19 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
         if (patch.id !== state.selectedPatchId) return patch;
 
         const moduleKey = action.moduleKey as keyof typeof patch.modules;
+
+        if (isPerChannelModule(moduleKey) && (patch.ampSel ?? 'A') === 'B') {
+          const mod = patch.channelB[moduleKey];
+          if (!mod) return patch;
+          return {
+            ...patch,
+            channelB: {
+              ...patch.channelB,
+              [moduleKey]: { ...mod, type: action.typeId },
+            },
+          };
+        }
+
         const module = patch.modules[moduleKey];
         if (!module) return patch;
 
@@ -181,18 +249,12 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
           ...patch,
           modules: {
             ...patch.modules,
-            [moduleKey]: {
-              ...module,
-              type: action.typeId,
-            },
+            [moduleKey]: { ...module, type: action.typeId },
           },
         };
       });
 
-      return {
-        ...state,
-        patches: newPatches,
-      };
+      return { ...state, patches: newPatches };
     }
 
     case 'TOGGLE_MODULE_ENABLED': {
@@ -202,6 +264,19 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
         if (patch.id !== state.selectedPatchId) return patch;
 
         const moduleKey = action.moduleKey as keyof typeof patch.modules;
+
+        if (isPerChannelModule(moduleKey) && (patch.ampSel ?? 'A') === 'B') {
+          const mod = patch.channelB[moduleKey];
+          if (!mod) return patch;
+          return {
+            ...patch,
+            channelB: {
+              ...patch.channelB,
+              [moduleKey]: { ...mod, enabled: !mod.enabled },
+            },
+          };
+        }
+
         const module = patch.modules[moduleKey];
         if (!module) return patch;
 
@@ -209,18 +284,12 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
           ...patch,
           modules: {
             ...patch.modules,
-            [moduleKey]: {
-              ...module,
-              enabled: !module.enabled,
-            },
+            [moduleKey]: { ...module, enabled: !module.enabled },
           },
         };
       });
 
-      return {
-        ...state,
-        patches: newPatches,
-      };
+      return { ...state, patches: newPatches };
     }
 
     case 'SET_MODULE_ENABLED': {
@@ -230,6 +299,19 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
         if (patch.id !== state.selectedPatchId) return patch;
 
         const moduleKey = action.moduleKey as keyof typeof patch.modules;
+
+        if (isPerChannelModule(moduleKey) && (patch.ampSel ?? 'A') === 'B') {
+          const mod = patch.channelB[moduleKey];
+          if (!mod) return patch;
+          return {
+            ...patch,
+            channelB: {
+              ...patch.channelB,
+              [moduleKey]: { ...mod, enabled: action.enabled },
+            },
+          };
+        }
+
         const module = patch.modules[moduleKey];
         if (!module) return patch;
 
@@ -237,18 +319,12 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
           ...patch,
           modules: {
             ...patch.modules,
-            [moduleKey]: {
-              ...module,
-              enabled: action.enabled,
-            },
+            [moduleKey]: { ...module, enabled: action.enabled },
           },
         };
       });
 
-      return {
-        ...state,
-        patches: newPatches,
-      };
+      return { ...state, patches: newPatches };
     }
 
     case 'DUPLICATE_PATCH': {
@@ -256,9 +332,16 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
       if (!sourcePatch) return state;
 
       // Create a deep copy of the source patch with the new ID
+      const sourceChannelB = sourcePatch.channelB ?? {
+        znr: { enabled: false, type: 0, params: [0] },
+        ext: { enabled: false, type: 0, params: [0, 0, 0] },
+        amp: { enabled: false, type: 0, params: [0, 0, 0] },
+        eq: { enabled: false, type: 0, params: [16, 16, 16, 16, 16, 16] },
+      };
       const duplicatedPatch: Patch = {
         ...sourcePatch,
         id: action.destinationId,
+        ampSel: sourcePatch.ampSel ?? 'A',
         // Deep copy modules
         modules: {
           amp: { ...sourcePatch.modules.amp, params: [...sourcePatch.modules.amp.params] },
@@ -271,6 +354,12 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
           mod: { ...sourcePatch.modules.mod, params: [...sourcePatch.modules.mod.params] },
           dly: { ...sourcePatch.modules.dly, params: [...sourcePatch.modules.dly.params] },
           rev: { ...sourcePatch.modules.rev, params: [...sourcePatch.modules.rev.params] },
+        },
+        channelB: {
+          znr: { ...sourceChannelB.znr, params: [...sourceChannelB.znr.params] },
+          ext: { ...sourceChannelB.ext, params: [...sourceChannelB.ext.params] },
+          amp: { ...sourceChannelB.amp, params: [...sourceChannelB.amp.params] },
+          eq: { ...sourceChannelB.eq, params: [...sourceChannelB.eq.params] },
         },
       };
 
@@ -312,6 +401,48 @@ function patchReducer(state: PatchState, action: PatchAction): PatchState {
 
     case 'CLEAR_PATCHES':
       return initialState;
+
+    case 'SWITCH_CHANNEL': {
+      if (state.selectedPatchId === null) return state;
+
+      const newPatches = state.patches.map((patch) => {
+        if (patch.id !== state.selectedPatchId) return patch;
+        if ((patch.ampSel ?? 'A') === action.targetChannel) return patch;
+        return { ...patch, ampSel: action.targetChannel };
+      });
+
+      return { ...state, patches: newPatches };
+    }
+
+    case 'SET_EFFECT_CHAIN': {
+      if (state.selectedPatchId === null) return state;
+
+      const newPatches = state.patches.map((patch) => {
+        if (patch.id !== state.selectedPatchId) return patch;
+
+        // Chain bit always goes to Channel A amp.params[3]
+        const ampParams = [...patch.modules.amp.params];
+        // Ensure params array is long enough
+        while (ampParams.length < 4) ampParams.push(0);
+        ampParams[3] = action.ampChain;
+
+        // WAH position goes to wah.params[0]
+        const wahParams = [...patch.modules.wah.params];
+        if (wahParams.length === 0) wahParams.push(0);
+        wahParams[0] = action.wahPosition;
+
+        return {
+          ...patch,
+          modules: {
+            ...patch.modules,
+            amp: { ...patch.modules.amp, params: ampParams },
+            wah: { ...patch.modules.wah, params: wahParams },
+          },
+        };
+      });
+
+      return { ...state, patches: newPatches };
+    }
 
     case 'SET_REMOTE_STATE':
       return {
@@ -365,6 +496,9 @@ export function PatchProvider({ children }: PatchProviderProps) {
         dispatch({ type: 'TOGGLE_MODULE_ENABLED', moduleKey }),
       setModuleEnabled: (moduleKey: string, enabled: boolean) =>
         dispatch({ type: 'SET_MODULE_ENABLED', moduleKey, enabled }),
+      switchChannel: (targetChannel: 'A' | 'B') => dispatch({ type: 'SWITCH_CHANNEL', targetChannel }),
+      setEffectChain: (ampChain: number, wahPosition: number) =>
+        dispatch({ type: 'SET_EFFECT_CHAIN', ampChain, wahPosition }),
       duplicatePatch: (sourceId: number, destinationId: number) =>
         dispatch({ type: 'DUPLICATE_PATCH', sourceId, destinationId }),
       renamePatch: (patchId: number, newName: string) =>

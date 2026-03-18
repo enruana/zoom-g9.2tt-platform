@@ -304,13 +304,20 @@ export interface RawPatchData {
     cmp: { enabled: boolean; type: number; params: number[] };
     wah: { enabled: boolean; type: number; params: number[] };
     ext: { enabled: boolean; params: number[] };
-    znr: { enabled: boolean; type: number; params: number[] };  // Active channel (A or B based on ampSel)
-    amp: { enabled: boolean; type: number; params: number[] };  // Active channel (A or B based on ampSel)
-    eq: { enabled: boolean; params: number[] };                 // Active channel (A or B based on ampSel)
+    znr: { enabled: boolean; type: number; params: number[] };  // Always Channel A (from bit-packed rows 4/5/6)
+    amp: { enabled: boolean; type: number; params: number[] };  // Always Channel A (from bit-packed rows 4/5/6)
+    eq: { enabled: boolean; params: number[] };                 // Always Channel A (from bit-packed rows 4/5/6)
     cab: { enabled: boolean; params: number[] };
     mod: { enabled: boolean; type: number; params: number[] };
     dly: { enabled: boolean; type: number; params: number[] };
     rev: { enabled: boolean; type: number; params: number[] };
+  };
+  /** Channel B's ZNR/EXT/AMP/EQ data (always from direct offsets 0x24-0x3B) */
+  channelB: {
+    znr: { enabled: boolean; type: number; params: number[] };
+    ext: { enabled: boolean; type: number; params: number[] };
+    amp: { enabled: boolean; type: number; params: number[] };
+    eq: { enabled: boolean; params: number[] };
   };
 }
 
@@ -319,6 +326,10 @@ const DIRECT_OFFSETS = {
   ZnrB_onoff: 0x24,   // 36
   ZnrB_type: 0x25,    // 37
   ZnrB_parm1: 0x26,   // 38 (threshold)
+  ExtB_onoff: 0x27,   // 39
+  ExtB_parm1: 0x28,   // 40
+  ExtB_parm2: 0x29,   // 41
+  ExtB_parm3: 0x2A,   // 42
   AmpB_onoff: 0x2C,   // 44
   AmpB_type: 0x2D,    // 45
   AmpB_parm1: 0x2E,   // 46 (gain)
@@ -376,6 +387,16 @@ export function parsePatchResponse(data: Uint8Array): RawPatchData | null {
     params: [rawData[DIRECT_OFFSETS.ZnrB_parm1] ?? 0],
   };
 
+  const extB = {
+    enabled: (rawData[DIRECT_OFFSETS.ExtB_onoff] ?? 0) === 1,
+    type: 0, // EXT has no type field
+    params: [
+      rawData[DIRECT_OFFSETS.ExtB_parm1] ?? 0,
+      rawData[DIRECT_OFFSETS.ExtB_parm2] ?? 0,
+      rawData[DIRECT_OFFSETS.ExtB_parm3] ?? 0,
+    ],
+  };
+
   const ampB = {
     enabled: (rawData[DIRECT_OFFSETS.AmpB_onoff] ?? 0) === 1,
     type: rawData[DIRECT_OFFSETS.AmpB_type] ?? 0,
@@ -408,7 +429,7 @@ export function parsePatchResponse(data: Uint8Array): RawPatchData | null {
   const ampA = {
     enabled: (ampARow[0] ?? 0) === 1,
     type: ampARow[1] ?? 0,
-    params: [ampARow[2] ?? 0, ampARow[3] ?? 0, ampARow[4] ?? 0],
+    params: [ampARow[2] ?? 0, ampARow[3] ?? 0, ampARow[4] ?? 0, ampARow[5] ?? 0],
   };
 
   const eqA = {
@@ -416,10 +437,9 @@ export function parsePatchResponse(data: Uint8Array): RawPatchData | null {
     params: [eqARow[2] ?? 16, eqARow[3] ?? 16, eqARow[4] ?? 16, eqARow[5] ?? 16, eqARow[6] ?? 16, eqARow[7] ?? 16],
   };
 
-  // Select the active channel based on ampSel
-  const activeZnr = ampSel === 0 ? znrA : znrB;
-  const activeAmp = ampSel === 0 ? ampA : ampB;
-  const activeEq = ampSel === 0 ? eqA : eqB;
+  // modules always holds Channel A (from bit-packed rows 4/5/6)
+  // channelB always holds Channel B (from direct offsets 0x24-0x3B)
+  // ampSel only determines which is currently active — no data swapping
 
   return {
     patchId,
@@ -441,9 +461,9 @@ export function parsePatchResponse(data: Uint8Array): RawPatchData | null {
         enabled: (extRow[0] ?? 0) === 1,
         params: [extRow[2] ?? 0, extRow[3] ?? 0, extRow[4] ?? 0],
       },
-      znr: activeZnr,
-      amp: activeAmp,
-      eq: activeEq,
+      znr: znrA,
+      amp: ampA,
+      eq: eqA,
       cab: {
         enabled: (cabRow[0] ?? 0) === 1,
         params: [cabRow[2] ?? 0, cabRow[3] ?? 0, cabRow[4] ?? 0],
@@ -463,6 +483,12 @@ export function parsePatchResponse(data: Uint8Array): RawPatchData | null {
         type: revRow[1] ?? 0,
         params: [revRow[2] ?? 0, revRow[3] ?? 0, revRow[4] ?? 0, revRow[5] ?? 0],
       },
+    },
+    channelB: {
+      znr: znrB,
+      ext: extB,
+      amp: ampB,
+      eq: eqB,
     },
   };
 }
@@ -662,9 +688,11 @@ export function buildPatchSelectMessage(patchId: number, mode: number): Uint8Arr
  * Encode raw bytes to 7-bit MIDI-safe format.
  * Conversion: 128 bytes → 147 bytes
  *
- * Structure: Every 7 bytes → 8 transmitted bytes
+ * Structure: Every 7 raw bytes → 8 transmitted bytes
+ * - 1 high-bits byte FIRST (bit 6 = data[0] MSB, bit 5 = data[1] MSB, ..., bit 0 = data[6] MSB)
  * - 7 data bytes (bit 7 stripped, all values < 128)
- * - 1 byte containing the 7 high bits
+ *
+ * Verified against G9ED capture (ab_channel_selection.log).
  *
  * @param data 128 bytes of raw data
  * @returns 147 bytes of 7-bit encoded data (MIDI-safe)
@@ -677,17 +705,22 @@ export function encode7bit(data: Uint8Array): Uint8Array {
   const result: number[] = [];
 
   for (let i = 0; i < 128; i += 7) {
+    // Compute high-bits byte (MSB-to-LSB: bit 6 → data[0], bit 0 → data[6])
     let highBits = 0;
-
     for (let j = 0; j < 7 && i + j < 128; j++) {
       const byte = data[i + j] ?? 0;
       if (byte & 0x80) {
-        highBits |= (1 << j);
+        highBits |= (1 << (6 - j));
       }
-      result.push(byte & 0x7f);
     }
 
+    // High-bits byte goes FIRST in each group
     result.push(highBits);
+
+    // Then 7 data bytes with bit 7 stripped
+    for (let j = 0; j < 7 && i + j < 128; j++) {
+      result.push((data[i + j] ?? 0) & 0x7f);
+    }
   }
 
   // Ensure exact size of 147 bytes
@@ -923,14 +956,29 @@ export function isEditExit(data: Uint8Array): boolean {
 
 /**
  * Serialize a Patch object to 128 bytes of raw patch data.
+ * Rows 4/5/6 (bit-packed) = Channel A always.
+ * Direct offsets 0x24-0x3B = Channel B always.
+ * ampSel at 0x3C determines which is active.
  * @param patch The Patch object to serialize
  * @returns 128 bytes of raw patch data
  */
 export function serializePatch(patch: Patch): Uint8Array {
+  // modules.znr/amp/eq is always Channel A → goes to bit-packed rows 4/5/6
+  // channelB is always Channel B → goes to direct offsets 0x24-0x3B
+  // No conditional swap needed
+  const ampSel = patch.ampSel ?? 'A';
+  const channelA = { znr: patch.modules.znr, ext: patch.modules.ext, amp: patch.modules.amp, eq: patch.modules.eq };
+  const channelBData = {
+    znr: patch.channelB?.znr ?? { enabled: false, type: 0, params: [0] },
+    ext: patch.channelB?.ext ?? { enabled: false, type: 0, params: [0, 0, 0] },
+    amp: patch.channelB?.amp ?? { enabled: false, type: 0, params: [0, 0, 0] },
+    eq: patch.channelB?.eq ?? { enabled: false, type: 0, params: [16, 16, 16, 16, 16, 16] },
+  };
+
   // Build the 12x8 matrix for bit packing
   const matrix: number[][] = [
-    // Row 0: Global (level)
-    [patch.level, 0, 0, 0, 0, 0, 0, 0],
+    // Row 0: Global (PatchLevel at column 5, matching BIT_TBL)
+    [0, 0, 0, 0, 0, patch.level, 0, 0],
     // Row 1: CMP
     [
       patch.modules.comp.enabled ? 1 : 0,
@@ -960,33 +1008,33 @@ export function serializePatch(patch: Patch): Uint8Array {
       patch.modules.ext.params[2] ?? 0,
       0, 0, 0,
     ],
-    // Row 4: ZNR
+    // Row 4: ZNR-A (always Channel A)
     [
-      patch.modules.znr.enabled ? 1 : 0,
-      patch.modules.znr.type,
-      patch.modules.znr.params[0] ?? 0,
+      channelA.znr.enabled ? 1 : 0,
+      channelA.znr.type,
+      channelA.znr.params[0] ?? 0,
       0, 0, 0, 0, 0,
     ],
-    // Row 5: AMP
+    // Row 5: AMP-A (always Channel A)
     [
-      patch.modules.amp.enabled ? 1 : 0,
-      patch.modules.amp.type,
-      patch.modules.amp.params[0] ?? 0,
-      patch.modules.amp.params[1] ?? 0,
-      patch.modules.amp.params[2] ?? 0,
-      patch.modules.amp.params[3] ?? 0,
+      channelA.amp.enabled ? 1 : 0,
+      channelA.amp.type,
+      channelA.amp.params[0] ?? 0,
+      channelA.amp.params[1] ?? 0,
+      channelA.amp.params[2] ?? 0,
+      channelA.amp.params[3] ?? 0,
       0, 0,
     ],
-    // Row 6: EQ
+    // Row 6: EQ-A (always Channel A)
     [
-      patch.modules.eq.enabled ? 1 : 0,
+      channelA.eq.enabled ? 1 : 0,
       0,
-      patch.modules.eq.params[0] ?? 16,
-      patch.modules.eq.params[1] ?? 16,
-      patch.modules.eq.params[2] ?? 16,
-      patch.modules.eq.params[3] ?? 16,
-      patch.modules.eq.params[4] ?? 16,
-      patch.modules.eq.params[5] ?? 16,
+      channelA.eq.params[0] ?? 16,
+      channelA.eq.params[1] ?? 16,
+      channelA.eq.params[2] ?? 16,
+      channelA.eq.params[3] ?? 16,
+      channelA.eq.params[4] ?? 16,
+      channelA.eq.params[5] ?? 16,
     ],
     // Row 7: CAB
     [
@@ -1027,8 +1075,8 @@ export function serializePatch(patch: Patch): Uint8Array {
       patch.modules.rev.params[3] ?? 0,
       0, 0,
     ],
-    // Row 11: Extra (ZNR-B, AMP-B, EQ-B) - use defaults
-    [1, 0, 0, 1, 0, 0, 0, 0],
+    // Row 11: Empty (Channel B is at direct offsets, not bit-packed)
+    [0, 0, 0, 0, 0, 0, 0, 0],
   ];
 
   // Pack the bits
@@ -1039,6 +1087,30 @@ export function serializePatch(patch: Patch): Uint8Array {
 
   // Copy bit-packed data
   result.set(packedData, 0);
+
+  // Write Channel B data at direct offsets
+  result[DIRECT_OFFSETS.ZnrB_onoff] = channelBData.znr.enabled ? 1 : 0;
+  result[DIRECT_OFFSETS.ZnrB_type] = channelBData.znr.type;
+  result[DIRECT_OFFSETS.ZnrB_parm1] = channelBData.znr.params[0] ?? 0;
+  result[DIRECT_OFFSETS.ExtB_onoff] = channelBData.ext.enabled ? 1 : 0;
+  result[DIRECT_OFFSETS.ExtB_parm1] = channelBData.ext.params[0] ?? 0;
+  result[DIRECT_OFFSETS.ExtB_parm2] = channelBData.ext.params[1] ?? 0;
+  result[DIRECT_OFFSETS.ExtB_parm3] = channelBData.ext.params[2] ?? 0;
+  result[DIRECT_OFFSETS.AmpB_onoff] = channelBData.amp.enabled ? 1 : 0;
+  result[DIRECT_OFFSETS.AmpB_type] = channelBData.amp.type;
+  result[DIRECT_OFFSETS.AmpB_parm1] = channelBData.amp.params[0] ?? 0;
+  result[DIRECT_OFFSETS.AmpB_parm2] = channelBData.amp.params[1] ?? 0;
+  result[DIRECT_OFFSETS.AmpB_parm3] = channelBData.amp.params[2] ?? 0;
+  result[DIRECT_OFFSETS.EqB_onoff] = channelBData.eq.enabled ? 1 : 0;
+  result[DIRECT_OFFSETS.EqB_parm1] = channelBData.eq.params[0] ?? 16;
+  result[DIRECT_OFFSETS.EqB_parm2] = channelBData.eq.params[1] ?? 16;
+  result[DIRECT_OFFSETS.EqB_parm3] = channelBData.eq.params[2] ?? 16;
+  result[DIRECT_OFFSETS.EqB_parm4] = channelBData.eq.params[3] ?? 16;
+  result[DIRECT_OFFSETS.EqB_parm5] = channelBData.eq.params[4] ?? 16;
+  result[DIRECT_OFFSETS.EqB_parm6] = channelBData.eq.params[5] ?? 16;
+
+  // Write ampSel
+  result[DIRECT_OFFSETS.AmpSel] = ampSel === 'B' ? 1 : 0;
 
   // Copy patch name (bytes 65-74, offset 0x41)
   const nameBytes = encodePatchName(patch.name);
