@@ -586,6 +586,12 @@ h2 { font-size: 42px; line-height: 1.4; }
   display: none;
 }
 
+/* --- Preview mode (presenter iframes) --- */
+body.pv-mode #progress-bar,
+body.pv-mode #slide-number {
+  display: none !important;
+}
+
 /* --- Progress Bar --- */
 #progress-bar {
   position: fixed;
