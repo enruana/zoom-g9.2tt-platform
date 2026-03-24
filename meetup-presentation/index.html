@@ -986,15 +986,17 @@ Después: experimentación."
           <div style="background:var(--bg-elevated);padding:6px 0;display:flex;justify-content:center;border-bottom:1px solid #374151;">
             <div style="width:60px;height:5px;background:#374151;border-radius:3px;"></div>
           </div>
-          <!-- Iframe -->
-          <iframe src="https://zoomg9.enruana.com/" style="width:375px;height:812px;border:none;background:var(--bg-void);transform:scale(0.536);transform-origin:top left;" loading="lazy"></iframe>
+          <!-- Iframe scaled to fit phone frame -->
+          <div style="width:100%;height:calc(100% - 22px);overflow:hidden;display:flex;justify-content:center;">
+            <iframe src="https://zoomg9.enruana.com/" style="width:375px;height:812px;border:none;background:var(--bg-void);transform:scale(0.573);transform-origin:top center;flex-shrink:0;" loading="lazy"></iframe>
+          </div>
         </div>
         <span style="font-size:16px;color:var(--text-muted);margin-top:10px;">Mobile</span>
       </div>
 
     </div>
 
-    <div class="url-display" style="margin-top:10px;">zoomg9.enruana.com</div>
+    <a href="https://zoomg9.enruana.com" target="_blank" class="url-display" style="margin-top:10px;text-decoration:none;">zoomg9.enruana.com</a>
     <p class="quote" style="margin-top:14px;">"Pueden probarlo ahora mismo."</p>
     <aside class="notes">
 "Y este es el resultado.
